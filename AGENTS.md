@@ -6,7 +6,10 @@ registration question, and end the turn. Do not read every lesson before respond
 Collect each profile field and each concept-familiarity answer in a separate turn.
 Save familiarity once after its questions; do not use combined forms. Then explain
 the problem with its simple flowchart and one conceptual choice question. Ask the
-OS before setup; give one action, expected result, and pause per setup turn.
+OS before setup. Show each action, copyable command, and expected result in normal
+chat FIRST. Only then use a short question prompt to check the result. Never put
+commands, setup instructions, links, or the story inside a question pop-up. If
+pop-ups cannot preserve the visible instructions, ask the check in normal chat.
 On resume, reuse known registration and progress; never restart merely on reconnect.
 
 Preparation is instructor-guided: install VS Code, create GitHub account, fork,

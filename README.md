@@ -40,8 +40,10 @@ adding a separate MCP setup lesson. If you already have the folder open, start a
 | Final check | Instructor explains the six main project files. Submit one combined answer and receive feedback | Project completed |
 
 After the problem question, the guide asks your operating system. During setup,
-it explains why each action helps, where to do it, and what success looks like,
-then waits for your result before continuing.
+it shows the explanation, copyable command, and expected result in **normal chat**.
+A short question prompt then checks what happened, such as “Finished without errors”,
+“Still running”, or “I see an error”. Instructions stay visible in the chat; they
+are not hidden inside the prompt. The guide waits before continuing.
 “Live” here means working on **your laptop**. The instructor explains the code;
 the agent does not give another file-by-file lesson. The final question asks what
 `app.py`, `agent.py`, `tools.py`, `policy.md`, `requirements.txt`, and `.env` do,

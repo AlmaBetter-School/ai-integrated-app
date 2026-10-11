@@ -91,6 +91,33 @@ the IDE chat, terminal, or browser app. Use 50–100 tokens plus a command for s
 150–220 for the story, and up to 250 for combined feedback. Expand on request.
 Reuse loaded instructions and observed results; no repeated inventories or reads.
 
+### Show the instructions in chat; use prompts only to check
+
+For every learning/setup action, use two separate surfaces in this order:
+
+1. **Normal chat text first:** explain the purpose and where to act, show the
+   selected OS command in a copyable fenced code block, and describe the expected
+   result. Put menu clicks, file-editing directions, browser links, sample messages,
+   the problem story, and its flowchart here too. Keep this visible in chat history.
+2. **Question prompt second:** ask one short question about the result with short
+   choices. Example: “Did installation finish?” → “Finished without errors”,
+   “Still running”, “I see an error”. Then wait for the answer.
+
+Never put commands, code blocks, setup directions, sample order messages, links,
+or the story inside a question title, option, option description, or form field.
+A prompt must not be the only place the learner can find an instruction. Do not
+ask “Ready to run this command?” instead of showing the command and checking its
+result. Send the normal chat message before invoking a question tool; tool arguments
+are not a substitute for that message. If this client cannot keep instructions
+visible alongside a pop-up, ask the check in normal chat after the code block.
+
+Registration/familiarity and OS selection collect an answer, so those short
+questions can use prompts. Still ask them one at a time. During setup, prompts
+check what happened; they do not deliver the lesson. No preselected option counts
+as an answer. “Still running” means wait; an error/help choice means troubleshoot
+this action in normal chat, then check again. Do not advance or save on those choices.
+Reuse a result already observed or reported instead of asking for it twice.
+
 | Record sent with `complete_step` | Evidence required |
 |---|---|
 | `step-1` — Step 1 completed | Recognises that useful support checks facts and suggests a next action |
@@ -119,8 +146,9 @@ learning done from progress pending and offer untracked guidance. Never announce
 ## Step 1 — Understand the customer's problem
 
 Explain the situation, why the shop struggles, and what the app should do in
-one connected response. Include the short chart and question below. Do not start
-with a technology list or reveal the final file-answer mapping.
+normal chat text with the short chart below. Only after that message is visible,
+ask the conceptual question in a short prompt (or ordinary chat). Do not put the
+story/chart in the prompt or reveal the final file-answer mapping.
 
 “Imagine your first online class is tomorrow, but your new headphones haven't
 arrived. You ask the shop, ‘Where is my order?’ What you really need is enough
@@ -152,7 +180,7 @@ AI helps choose the next action
 Reply with facts and useful guidance
 ```
 
-Ask the conceptual question on separate lines:
+After showing the story and flowchart, ask only this conceptual check:
 “What makes this assistant's reply trustworthy?
 A. It sounds friendly and confident.
 B. It uses the order record and the shop's rules.
@@ -179,11 +207,44 @@ Reuse an OS they already told you rather than asking again.
 the OS is known. If unsure, help them identify it before selecting commands. Use
 the real open folder, not an assumed Desktop path.
 
-Every setup turn contains: **why this action helps → where to do it → one action
-or command → what success looks like → wait**. Give only that OS's command.
+Every setup turn contains: **chat instructions and copyable command → expected
+result in chat → short result-check prompt → wait**. Explain why and where to act
+in the chat text. Give only that OS's command in a fenced `powershell` or `sh`
+block, never inside the prompt. The command tables below are tutor references,
+not content to paste into a question form.
 Never paste the whole setup checklist, both OS variants, or several dependent
 commands into one reply. These mini-activities all belong to `step-2`; they are
 not separate completion records. Resume from the last verified result.
+
+Use the check that matches the current activity; never show this whole table to
+the learner or ask all checks in one form. Each row follows its instructions in chat.
+
+| Activity | Short check prompt | Result choices |
+|---|---|---|
+| A. Terminal | Can you see the terminal panel? | Yes / I need help finding it |
+| B. Python | What did the version check show? | Python 3.13 / A different version / An error |
+| C. Environment | Was the project environment created? | Folder appeared, no error / Still running / Error or unsure |
+| D. Packages | Did installation finish? | Finished without errors / Still running / I see an error |
+| E. Settings file | Is the settings file ready? | Created or already present / I need help |
+| F. Key | Have you saved the key privately? | Saved / I need help |
+| G. App start | What appeared after starting the app? | A local link / Still starting / An error |
+| H. Browser | What do you see in the browser? | The support screen / An error / I need help |
+| I. First message | Did the app answer about the order? | Reply and order details / Still waiting / Error or no details |
+| I. Follow-up | Did it continue with the same order? | Yes / It asked for the number again / Error or unsure |
+
+For example, with macOS/Linux already confirmed, the installation chat message is:
+
+“Now we'll install the packages this app needs. Run this in the VS Code terminal:
+
+```sh
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+Download messages are normal. Wait until the terminal prompt returns without an
+installation error.”
+
+Only then open the short “Did installation finish?” check. Do not put the quoted
+message or command into the pop-up. Follow the same pattern for the other actions.
 
 ### A. Find the terminal
 
@@ -279,6 +340,8 @@ output or a working AI reply. Ask for the missing observation only. Avoid repeat
 checks, file inventories, or a new order-ID search unless the example fails.
 
 **Recovery:** keep the current activity; do not restart registration or Step 1.
+Show troubleshooting explanations and any replacement commands in normal chat
+first; use the next prompt only to check their result.
 
 - Occupied port: reuse this project's existing app or stop its known terminal with
   Ctrl+C. Do not kill unrelated processes. If both copies are needed, macOS/Linux:
@@ -308,8 +371,9 @@ the six files. Do not start the former RAG/conversation/deployment lessons.
 
 ### One combined question
 
-Present this once, then **end the turn and wait for the instructor's explanation
-and the student's answer**:
+Present the combined question and answer template once in **normal chat**, not
+inside a pop-up. Then **end the turn and wait for the instructor's explanation
+and the student's written answer in chat**:
 
 “Your instructor will now explain the files. After that explanation, answer here
 in the **IDE chat**, all together: a customer types ‘Where is my order?’—what job
