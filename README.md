@@ -110,8 +110,11 @@ Start the app:
 ```
 
 Open the local address printed in the terminal, usually `http://localhost:7860`.
-Ask “Where is order ee64d42b8cf066f35eac1cf57de1aa85?” and then “I need it for class.
-What should I do now?” Use **New chat** to clear the chat.
+Ask “Where is order 4cdeeb4be90a4bde94dc058f50a4d8c2?” and then “I need it for class.
+What should I do now?” Or choose a labelled practice question below the chat,
+review the filled-in message, and press **Send**. Try tracking a parcel, a delivered
+but missing parcel, or a canceled order. Follow-up suggestions use the current
+order. Use **New chat** to clear the conversation.
 
 ## What this small app can do
 
@@ -123,7 +126,7 @@ successful order lookup, with a 150-token output limit and thinking disabled.
 The model is `deepseek-flash`; the HTTPS endpoint is fixed in `agent.py`.
 The request follows [DeepSeek’s JSON output format](https://api-docs.deepseek.com/guides/json_mode/).
 
-The [Orders API](http://4.186.26.27:8787/ecommerce?dataset=orders) is fixed in
+The [Orders API](http://4.186.26.27:8787/ecommerce?dataset=orders_new) is fixed in
 `tools.py`. It contains historical records, not live tracking. The app cannot
 change orders or issue refunds. It uses prepared answer sentences, so this is a
 focused support example, not a general-purpose chatbot. Replies appear once ready.

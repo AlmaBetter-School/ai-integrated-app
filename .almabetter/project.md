@@ -326,7 +326,7 @@ Do not direct them to a Deploy button. A loaded page alone isn't a working AI re
 
 ### I. Try a customer conversation
 
-“In the **browser app**, send: Where is order ee64d42b8cf066f35eac1cf57de1aa85?”
+“In the **browser app**, send: Where is order 4cdeeb4be90a4bde94dc058f50a4d8c2?”
 Explain these are historical practice records, not a live parcel. Wait for the
 learner to see an order card and factual support reply, or troubleshoot the error.
 Then, in the next turn: “Now send: I need it for class. What should I do now?”

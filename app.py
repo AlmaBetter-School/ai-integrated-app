@@ -59,11 +59,27 @@ with gr.Blocks(title="Order Support", analytics_enabled=False) as demo:
                     lines=1, max_lines=3, scale=5,
                 )
                 send = gr.Button("Send", variant="primary", scale=1, min_width=85)
+            gr.Markdown("Choose a practice question below. It fills the message box; "
+                        "you can edit it, then press **Send**.")
             gr.Examples(
-                examples=[["Where is order ee64d42b8cf066f35eac1cf57de1aa85?"]],
-                inputs=message, label="Try an example",
+                examples=[
+                    ["Where is order 4cdeeb4be90a4bde94dc058f50a4d8c2?"],
+                    ["Order 751df94e324fbe8de6a5a186568f128a is marked delivered, "
+                     "but I can't find it. What should I do?"],
+                    ["My order 6d8a901414328a5ace8b17a2fb3f664a was canceled. "
+                     "What can I do next?"],
+                ],
+                example_labels=["Where is my parcel?", "Delivered, but missing", "My order was canceled"],
+                inputs=message, label="Start with a practice order",
             )
-            gr.Markdown("You can ask follow-up questions without repeating the order number.")
+            gr.Examples(
+                examples=[["I need it for class. What should I do now?"],
+                          ["Who should I contact for help?"]],
+                example_labels=["I need it for class", "Who can help me?"],
+                inputs=message, label="After a reply, try a follow-up",
+            )
+            gr.Markdown("Follow-ups use the same order—no need to repeat its number. "
+                        "Choose **New chat** for a fresh conversation.")
 
     # Enter and Send do the same job. Reset uses the same queue to avoid stale replies.
     gr.on(triggers=[message.submit, send.click], fn=reply,

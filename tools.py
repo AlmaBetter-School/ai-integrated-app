@@ -3,7 +3,7 @@ from datetime import datetime
 
 import httpx
 
-ORDERS_API_URL = "http://4.186.26.27:8787/ecommerce?dataset=orders"
+ORDERS_API_URL = "http://4.186.26.27:8787/ecommerce?dataset=orders_new"
 ORDER_STATUSES = ("approved", "canceled", "created", "delivered",
                   "invoiced", "processing", "shipped", "unavailable")
 
