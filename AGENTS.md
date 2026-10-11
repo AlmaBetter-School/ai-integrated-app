@@ -1,21 +1,16 @@
 # Start the guided workshop
 
-When the student says **"Start project"**, **"Start my AlmaBetter project"**,
-or asks to resume, read the opening rules and current step in
-[.almabetter/project.md](.almabetter/project.md). Reuse context already read;
-do not reload the full guide each turn.
-Begin with registration, then the skills form and the project story.
-Do not repeat fork, clone, or project setup in this already-open folder.
-The guide contains the full teaching flow and project rules.
+When the learner says **“Start the Project”**, read only the startup block in
+[.almabetter/project.md](.almabetter/project.md) once, ask the next missing
+registration question, and end the turn. Do not read every lesson before responding.
+On resume, reuse known registration and progress; never restart merely on reconnect.
 
-Teach one small activity at a time. Explain before asking, use everyday examples,
-and help the student work with the existing files. Students need not edit this file.
+Preparation is instructor-guided: install VS Code, create GitHub account, fork,
+ask the coding agent to clone the fork, then open the folder. Do not repeat this
+inside an already-open project. `.vscode/mcp.json` includes the workshop connection.
 
-The cloned folder includes `.vscode/mcp.json` for the hosted workshop MCP
-connection. If the instructor provides a different address, update only that URL
-and never add a credential to the file.
-
-After registration, explain the problem statement and ask one practical question
-before setup. Ask the learner's operating system before giving any terminal
-command. Guide environment, key, app start, browser link, file walkthrough, and
-Docker/Azure demonstration in that order.
+The agent guides the problem question and OS-specific local setup. The instructor
+explains the files; the agent explains only Dockerfile and reviews one combined
+student answer. Record project completion after that feedback and the two earlier
+checkpoints. Deployment is a separate instructor demonstration, outside the project.
+Use the guide's current completion IDs and criteria. No extra lessons or quizzes.

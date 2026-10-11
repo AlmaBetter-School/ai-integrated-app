@@ -7,54 +7,46 @@ A friendly reply helps, but you also need someone to check what happened and exp
 what you can do. In this project, Python looks up an order and DeepSeek helps choose
 an appropriate response using the shop's rules.
 
-You will run an existing app, explore how its parts work together, and follow the
-instructor as they package it with Docker and demonstrate running it on Azure.
+You will understand a customer's problem, run the support app on your laptop,
+and answer one combined question after the instructor explains its files.
 No previous AI, API, or cloud experience is assumed.
 
-## Start here
+## Before the project: instructor-guided setup
 
-1. **Open VS Code.** This is where you will open the project and chat with your guide.
-2. **Fork the workshop repository.** Open the GitHub link shared by the instructor
-   ([applied-ai-001](https://github.com/AlmaBetter-School/applied-ai-001)), sign in,
-   and choose **Fork**. This creates your own copy on GitHub.
-3. **Clone your fork to Desktop.** Copy the HTTPS URL from your fork's **Code**
-   button. In VS Code, use **Clone Repository**, paste that URL, and select
-   **Desktop** as the destination. Cloning downloads the files onto your computer.
-4. **Open the cloned folder and start.** Open `Desktop/applied-ai-001` in VS Code.
-   In the coding assistant's chat, say **“Start project.”** This is a chat message,
-   not a terminal command. The guide asks for your name, then collects the remaining
-   registration details one at a time.
+1. Download and install [VS Code](https://code.visualstudio.com/).
+2. Create a [GitHub account](https://github.com/signup).
+3. Fork [the workshop repository](https://github.com/AlmaBetter-School/applied-ai-001)
+   into your own GitHub account.
+4. Ask the coding agent to clone **your fork** onto your laptop. For example:
+   “Clone my repository `<paste my fork's URL>` into my Desktop folder.” The agent
+   can help if Git is missing; let it clarify the location rather than overwrite
+   an existing folder.
+5. Open the cloned `applied-ai-001` folder in VS Code.
+6. In the agent chat, write **“Start the Project.”** This is not a terminal command.
 
-Next comes skill familiarity, the customer problem, and the six learning steps
-below. If the folder is already open, start from step 4; do not fork or clone again.
+The guide starts registration: name, email, college, and year, **one at a time**.
+It saves these through the included workshop MCP connection, asks one brief Python
+familiarity question required by the service, then starts the project. The connection
+is already configured in `.vscode/mcp.json`; resolve permissions if prompted, without
+adding a separate MCP setup lesson. If you already have the folder open, start at 6.
 
-The workshop connection is included in `.vscode/mcp.json`; students do not add an
-MCP endpoint before starting. If VS Code shows a workspace or tool permission
-prompt, handle it with the instructor when it appears. If registration cannot be
-saved, the guide helps restore that connection and resumes the same activity.
-You do not need to study the guide files, add the DeepSeek key, or install the app
-before registration. Local app setup comes in learning Step 2.
+## The project session
 
-| Step | What you do |
-|---|---|
-| 1 | Meet the customer and understand what useful help looks like |
-| 2 | Run the app on your computer and try a conversation |
-| 3 | Explore the files, one small section at a time |
-| 4 | Follow one question through the whole app |
-| 5 | Understand how RAG helps an assistant find useful help documents |
-| 6 | Understand Docker and watch the instructor's Azure demonstration |
+| Activity | What happens | Progress recorded |
+|---|---|---|
+| Step 1: the problem | Meet the customer, understand useful support, answer one simple choice question | Step 1 completed |
+| Step 2: run locally | Choose your OS, prepare Python, add the key privately, open the app and try a conversation | Step 2 completed |
+| Final check | Instructor explains the files; agent briefly explains Dockerfile. Submit one combined answer and receive feedback | Project completed |
 
-Every step follows the same simple rhythm: understand why the step matters, do
-one small activity, explain what you noticed, and then move to the next step.
-The tutor will pause at a practical checkpoint instead of giving a long quiz.
-Treat each activity like a small support mystery: notice the customer problem,
-inspect one part of the app, make a prediction, and test it in the browser.
+During setup, the guide explains one action at a time and waits for the result.
+“Live” here means working on **your laptop**. The instructor explains the code;
+the agent does not give another file-by-file lesson. The final question asks for
+each file's purpose in a few words, all in one answer. Feedback explains what is
+right and corrects misunderstandings; this is a learning activity, not a perfect-score
+exam. The instructor's deployment demonstration follows **outside the project**.
+No Docker build or Azure deployment is needed for project completion.
 
-The RAG activity is a short, guided example: find the relevant help passage, give
-it to the AI, then explain the answer. It adds no code or packages; the app still
-uses one order lookup and its small policy file.
-
-## Four files tell the story
+## File reference for the instructor
 
 | File | Its job |
 |---|---|
@@ -64,7 +56,7 @@ uses one order lookup and its small policy file.
 | `agent.py` | The coordinator: connect the message, records, rules, and DeepSeek |
 
 `requirements.txt` lists the packages to install. `.env` holds your private key.
-`Dockerfile` describes the package used in the final demonstration. The small
+`Dockerfile` describes how to package and start the app. The small
 `AGENTS.md` points the coding assistant to `.almabetter/project.md`; students
 follow the conversation, not those internal instructions. `tests/` is for maintainers.
 
@@ -131,26 +123,13 @@ change orders or issue refunds. It uses prepared answer sentences, so this is a
 focused support example, not a general-purpose chatbot. Replies appear once ready.
 Chat history stays in the current Gradio browser session, not on disk.
 
-## Instructor: Docker and Azure
+## Progress reporting for the instructor
 
-Explain the Dockerfile before running these commands from the project folder:
-
-```sh
-docker build --platform linux/amd64 -t order-support .
-docker run --rm -p 7860:7860 --env-file .env order-support
-```
-
-Open `http://localhost:7860`. Stop any earlier local app using port 7860 first.
-`.dockerignore` keeps the key out of the build; `--env-file` supplies it at runtime.
-
-For Azure Container Apps, the instructor pushes the image to a container registry,
-creates a container app using that image, supplies `DEEPSEEK_API_KEY` through an
-Azure secret reference, enables HTTP ingress with target port 7860, and tests the
-public link. Use the instructor's subscription and configured registry access.
-The image contains our app; DeepSeek and the order records remain external services.
-Students explain what changed between local and online; they need not provision Azure.
-The instructor can use the [Azure portal guide](https://learn.microsoft.com/en-us/azure/container-apps/quickstart-portal)
-and [secret configuration guide](https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets).
+This shorter session uses `v3-01` (problem), `v3-02` (working local app), and
+`v3-project-completed` (combined answer reviewed after the instructor's explanation).
+The existing MCP tool saves each as a `step_completed` event. A dashboard should
+interpret the final marker as **Project completed**; it is not a new database event
+type. Written answers remain in chat. Old `v2-*` records belong to the longer flow.
 
 ## Maintainer checks
 
