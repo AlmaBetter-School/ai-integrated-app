@@ -36,13 +36,14 @@ adding a separate MCP setup lesson. If you already have the folder open, start a
 |---|---|---|
 | Step 1: the problem | Meet the customer, understand useful support, answer one simple choice question | Step 1 completed |
 | Step 2: run locally | Choose your OS, prepare Python, add the key privately, open the app and try a conversation | Step 2 completed |
-| Final check | Instructor explains the files; agent briefly explains Dockerfile. Submit one combined answer and receive feedback | Project completed |
+| Final check | Instructor explains the six main project files. Submit one combined answer and receive feedback | Project completed |
 
 During setup, the guide explains one action at a time and waits for the result.
 “Live” here means working on **your laptop**. The instructor explains the code;
-the agent does not give another file-by-file lesson. The final question asks for
-each file's purpose in a few words, all in one answer. Feedback explains what is
-right and corrects misunderstandings; this is a learning activity, not a perfect-score
+the agent does not give another file-by-file lesson. The final question asks what
+`app.py`, `agent.py`, `tools.py`, `policy.md`, `requirements.txt`, and `.env` do,
+all in one answer. Dockerfile is excluded from explanations and questions. Feedback
+explains what is right and corrects misunderstandings; this is a learning activity, not a perfect-score
 exam. The instructor's deployment demonstration follows **outside the project**.
 No Docker build or Azure deployment is needed for project completion.
 
@@ -56,7 +57,7 @@ No Docker build or Azure deployment is needed for project completion.
 | `agent.py` | The coordinator: connect the message, records, rules, and DeepSeek |
 
 `requirements.txt` lists the packages to install. `.env` holds your private key.
-`Dockerfile` describes how to package and start the app. The small
+Dockerfile and deployment belong to the instructor's separate demonstration. The small
 `AGENTS.md` points the coding assistant to `.almabetter/project.md`; students
 follow the conversation, not those internal instructions. `tests/` is for maintainers.
 
@@ -125,11 +126,18 @@ Chat history stays in the current Gradio browser session, not on disk.
 
 ## Progress reporting for the instructor
 
-This shorter session uses `v3-01` (problem), `v3-02` (working local app), and
-`v3-project-completed` (combined answer reviewed after the instructor's explanation).
+Progress is saved using plain IDs:
+
+| Display label | Saved `step_id` |
+|---|---|
+| Step 1 completed | `step-1` |
+| Step 2 completed | `step-2` |
+| Project completed | `project-completed` |
+
 The existing MCP tool saves each as a `step_completed` event. A dashboard should
-interpret the final marker as **Project completed**; it is not a new database event
-type. Written answers remain in chat. Old `v2-*` records belong to the longer flow.
+interpret `project-completed` as overall completion; it is not a new database event
+type. Written answers remain in chat. Earlier records remain unchanged; new saves
+use the IDs above without version prefixes.
 
 ## Maintainer checks
 

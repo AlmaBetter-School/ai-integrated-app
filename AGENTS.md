@@ -10,7 +10,8 @@ ask the coding agent to clone the fork, then open the folder. Do not repeat this
 inside an already-open project. `.vscode/mcp.json` includes the workshop connection.
 
 The agent guides the problem question and OS-specific local setup. The instructor
-explains the files; the agent explains only Dockerfile and reviews one combined
-student answer. Record project completion after that feedback and the two earlier
-checkpoints. Deployment is a separate instructor demonstration, outside the project.
-Use the guide's current completion IDs and criteria. No extra lessons or quizzes.
+explains the files; the agent asks for and reviews one combined answer about the
+six main project files. Exclude Dockerfile from explanations and questions. Record
+project completion after that feedback and the two earlier checkpoints. Deployment is a separate instructor demonstration, outside the project.
+Save progress as `step-1`, `step-2`, and `project-completed`, without version
+prefixes. Follow the guide's evidence criteria. No extra lessons or quizzes.
