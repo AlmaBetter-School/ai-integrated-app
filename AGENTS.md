@@ -3,6 +3,10 @@
 When the learner says **“Start the Project”**, read only the startup block in
 [.almabetter/project.md](.almabetter/project.md) once, ask the next missing
 registration question, and end the turn. Do not read every lesson before responding.
+Collect each profile field and each concept-familiarity answer in a separate turn.
+Save familiarity once after its questions; do not use combined forms. Then explain
+the problem with its simple flowchart and one conceptual choice question. Ask the
+OS before setup; give one action, expected result, and pause per setup turn.
 On resume, reuse known registration and progress; never restart merely on reconnect.
 
 Preparation is instructor-guided: install VS Code, create GitHub account, fork,

@@ -25,8 +25,9 @@ No previous AI, API, or cloud experience is assumed.
 6. In the agent chat, write **“Start the Project.”** This is not a terminal command.
 
 The guide starts registration: name, email, college, and year, **one at a time**.
-It saves these through the included workshop MCP connection, asks one brief Python
-familiarity question required by the service, then starts the project. The connection
+It saves these through the included workshop MCP connection. Then it asks about
+Python, terminal use, and APIs **one question at a time**, records the familiar
+concepts once, and starts the problem story with a simple flowchart. The connection
 is already configured in `.vscode/mcp.json`; resolve permissions if prompted, without
 adding a separate MCP setup lesson. If you already have the folder open, start at 6.
 
@@ -34,11 +35,13 @@ adding a separate MCP setup lesson. If you already have the folder open, start a
 
 | Activity | What happens | Progress recorded |
 |---|---|---|
-| Step 1: the problem | Meet the customer, understand useful support, answer one simple choice question | Step 1 completed |
+| Step 1: the problem | Meet the customer, follow the support flowchart, answer one conceptual choice question | Step 1 completed |
 | Step 2: run locally | Choose your OS, prepare Python, add the key privately, open the app and try a conversation | Step 2 completed |
 | Final check | Instructor explains the six main project files. Submit one combined answer and receive feedback | Project completed |
 
-During setup, the guide explains one action at a time and waits for the result.
+After the problem question, the guide asks your operating system. During setup,
+it explains why each action helps, where to do it, and what success looks like,
+then waits for your result before continuing.
 “Live” here means working on **your laptop**. The instructor explains the code;
 the agent does not give another file-by-file lesson. The final question asks what
 `app.py`, `agent.py`, `tools.py`, `policy.md`, `requirements.txt`, and `.env` do,
