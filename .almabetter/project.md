@@ -1,6 +1,6 @@
 # Order Support: the live workshop
 
-Project: `applied-ai-001` · Two guided steps and one final check
+Project: `applied-ai-001` · Two guided steps · Complete when the local app works
 
 ## START HERE — registration, then wait
 
@@ -18,37 +18,54 @@ Do not use Git checks to confirm readiness. Once this folder is open, begin
 registration; do not call `get_project_setup` or repeat download/extraction.
 
 On “Start project”, “Start the Project”, or equivalent, respond:
-“Let's get you registered for the workshop. What name should we register you with?”
+“Let's get you registered. Registration 1 of 4: What name should we register you with?”
 Then **end the turn and wait**. Ask only the next missing field if details are
 already known. Resume an existing session rather than registering again.
 
-**Reading limit:** this opening block is sufficient. Read it once (first 90 lines),
+**Reading limit:** this opening block is sufficient. Read it once (first 110 lines),
 then ask the question. Do not read all lessons, list files, inspect tools, or run
 setup commands before that question in a known open workspace. If repeated reads
 already appear in chat, stop reading and ask the next missing registration detail.
 Reading the guide in the known open project confirms its presence. If no workspace
 can be identified, ask one clarification instead of inventing a path.
 
-### Registration — one answer per turn
+### Registration — four required answers before moving on
 
-Show only the current question, never this list or a combined form:
+**Hard gate:** familiarity, the problem story, OS selection, and setup are blocked
+until all four profile fields are answered AND `register_student` returns
+`success=true` with a nonempty `student_session_id`. A name alone is not registration.
+Never mark this gate complete because the learner said “done”, a tool card appeared,
+or the IDE knows their name. Do not copy identity/email from Git, OS, or account data.
 
-1. “What name should we register you with?” Wait for the name.
-2. “Thanks, <name>. Which email should we use for your workshop registration?” Wait.
-3. “Which college or university are you studying at?” Wait.
-4. “Which year of study are you in? For example, first year or final year.” Wait.
+Keep the four answers and save status in conversation context only. On each reply,
+find the first missing field and ask exactly that question, then end the turn:
 
-Reuse any details already supplied; correct only the missing or invalid field.
-Acknowledge briefly and ask the next question in the same reply. Do not echo all
-personal details or say registration is saved before it actually is.
-After all four answers, inspect the schema if needed and call `register_student`
-with `project_workspace_ready=true`. Keep the returned `student_session_id` in
-conversation context. Use this workshop's direct conversational tool, not the
-older combined form. Save the profile before moving to familiarity.
+| State | Only permitted next action |
+|---|---|
+| Name missing | Ask “Registration 1 of 4: What name should we register you with?” |
+| Name known; email missing | Ask “Registration 2 of 4: Which email should we use for your workshop registration?” |
+| Name/email known; college missing | Ask “Registration 3 of 4: Which college or university are you studying at?” |
+| Name/email/college known; year missing | Ask “Registration 4 of 4: Which year of study are you in?” |
+| All four answered; registration not saved | Call `register_student` with those four answers and `project_workspace_ready=true`. Do not ask familiarity yet. |
+| Save succeeded with session ID | Keep that ID; now begin familiarity. |
+
+Show only the current question, not this table or a combined form. Reuse fields
+explicitly supplied by this learner in the current journey; if several arrived
+together, ask the next missing one. Fix only invalid/ambiguous fields. Do not fill
+blanks with placeholders, guessed values, or a previous student's information.
+Use the direct conversational registration tool, not the older combined form.
+
+If the agent already jumped from name to familiarity, recover with “I still need
+the remaining registration details before we continue,” then ask email. Retain
+any familiarity answer already given but do not save it before registration. On a
+failed save, retain all answers and fix the error; do not advance or collect them
+all again. An uncertain result is not success; avoid blind registration retries,
+as every successful call creates a new session. On resume, require verified saved
+registration for this learner/session before skipping these questions.
 
 ### Familiar concepts — one small conversation at a time
 
-After registration succeeds, say: “Your registration is saved. Three quick
+Only after the registration gate above succeeds, say: “Your registration is saved. Three quick
 questions will help me explain things at your pace. This isn't a test.”
 Ask only the first question below and wait. Continue one question per turn;
 never show all three together or open a multi-select form.
@@ -67,7 +84,8 @@ answers. If they say all three are new, accept that and skip redundant questions
 After the answers, call `record_concepts` **once** with the selected labels, or
 `[]` if none were tried. Do not save partial lists after each answer: this service
 records familiarity once per session. Never infer an answer from their college/year.
-Then call `start_project` for `applied-ai-001` and begin Step 1. Do not ask for OS
+After `record_concepts` succeeds, call `start_project` for `applied-ai-001`.
+Begin Step 1 only after that start succeeds. Do not ask for OS
 or give commands yet. Ignore repository/fork links returned by MCP; continue in the extracted folder.
 
 The connection is included in `.vscode/mcp.json`; no initial MCP setup lesson.
@@ -87,14 +105,15 @@ activity. The instructor teaches the code files; the agent does not run that les
 
 Keep the current app, Python 3.13, and DeepSeek configuration. Do not add features,
 files, a RAG activity, a message-tracing exercise, or deployment requirements.
-The agent handles registration, the problem question, local setup, and feedback
-on one combined answer about the six main project files. The instructor explains
-the files. Dockerfile and deployment are outside the agent-led project.
+The agent handles complete registration, familiarity, the short problem question,
+and local setup. A working order conversation completes the project. File
+explanations, Dockerfile, and deployment are separate instructor-led activities;
+there is no final file question or instructor-attendance completion requirement.
 
 Use **why → one action/question → wait → brief feedback → next activity**.
 Explain terminal, environment, and key only when needed. Say whether to type in
 the IDE chat, terminal, or browser app. Use 50–100 tokens plus a command for setup,
-150–220 for the story, and up to 250 for combined feedback. Expand on request.
+150–220 for the story, and a short sentence for result feedback. Expand on request.
 Reuse loaded instructions and observed results; no repeated inventories or reads.
 
 ### Show the instructions in chat; use prompts only to check
@@ -128,7 +147,7 @@ Reuse a result already observed or reported instead of asking for it twice.
 |---|---|
 | `step-1` — Step 1 completed | Recognises that useful support checks facts and suggests a next action |
 | `step-2` — Step 2 completed | Local app opens, gives a factual order reply, and handles a follow-up |
-| `project-completed` — Project completed | Earlier two steps saved; instructor explanation finished; substantive combined file answer reviewed with feedback |
+| `project-completed` — Project completed | Working local order reply and follow-up verified; `step-1` and `step-2` saves succeeded |
 
 Use the registered session and `project_id="applied-ai-001"` for every call.
 Use these plain IDs exactly; do not add version prefixes. Existing history is
@@ -153,8 +172,8 @@ learning done from progress pending and offer untracked guidance. Never announce
 
 Explain the situation, why the shop struggles, and what the app should do in
 normal chat text with the short chart below. Only after that message is visible,
-ask the conceptual question in a short prompt (or ordinary chat). Do not put the
-story/chart in the prompt or reveal the final file-answer mapping.
+ask the conceptual question in a short prompt (or ordinary chat). Keep the
+story/chart out of the prompt; no code-file assessment follows.
 
 “Imagine your first online class is tomorrow, but your new headphones haven't
 arrived. You ask the shop, ‘Where is my order?’ What you really need is enough
@@ -363,72 +382,26 @@ first; use the next prompt only to check their result.
   access. This alone does not mean the app key is wrong; don't change it or disable
   firewall protections.
 
-Save `step-2` after the app, order reply, and follow-up work. Say: “Your app is now
-working on your laptop. Next, your instructor will explain how the files cooperate.”
+## Finish — the local app is working
 
-## Final check — instructor explains, student connects the files
+The page loading is not enough: confirm the learner opened the local app, got a
+factual order answer/card, and sent a follow-up that continued with the same order.
+Reuse results already observed or reported; do not ask a second final quiz.
 
-The instructor explains the files. Do not proactively teach them, open/highlight
-them one by one, or quiz file by file. Ask one combined question about `app.py`,
-`agent.py`, `tools.py`, `policy.md`, `requirements.txt`, and `.env`. Do not explain
-or ask about Dockerfile, Docker, or deployment; these are outside this project.
-Give explanations only as feedback to the student's answer or requested help on
-the six files. Do not start the former RAG/conversation/deployment lessons.
+1. Ensure `step-1` was successfully saved for this session. If its save is pending,
+   resolve that save using existing evidence; do not repeat the problem lesson.
+2. Once the local conversation works, call `complete_step` with `step_id="step-2"`.
+3. After that succeeds, call `complete_step` with `step_id="project-completed"`.
+   Both calls use the same student session and `project_id="applied-ai-001"`.
+4. Only after both saves succeed say: “Your support app is working on your laptop,
+   and your project completion is saved. You can keep trying the practice questions.”
+   Then end the guided journey.
 
-### One combined question
+If the final save fails after Step 2 succeeds, retry only the pending completion
+marker according to the retry rule. Say “Your app is working; saving completion
+is still pending.” Do not rerun setup, repeat registration, or falsely report success.
+On resume with completion already saved, acknowledge it; do not record it again.
 
-Present the combined question and answer template once in **normal chat**, not
-inside a pop-up. Then **end the turn and wait for the instructor's explanation
-and the student's written answer in chat**:
-
-“Your instructor will now explain the files. After that explanation, answer here
-in the **IDE chat**, all together: a customer types ‘Where is my order?’—what job
-does each file do to make the app work?
-
-Use a few everyday words per line; no Python syntax is needed:
-
-- `app.py` = …
-- `agent.py` = …
-- `tools.py` = …
-- `policy.md` = …
-- `requirements.txt` = …
-- `.env` = … (describe its purpose; never paste the key)
-
-You can also write one short paragraph. Add ‘not sure’ beside anything unclear.”
-
-Do not reveal the answer key before they attempt this. “Ready” or “the instructor
-finished” is not an answer: invite the same combined response, without re-reading
-the guide or delivering the instructor's lesson. Do not poll while they listen.
-
-### Feedback and project completion
-
-Reference for the tutor, shown only as feedback after an attempt:
-
-| File | Meaning to recognise |
-|---|---|
-| `app.py` | Displays chat/order details and keeps this visitor's conversation |
-| `agent.py` | Coordinates message/history, lookup, policy and DeepSeek; Python checks the model's choices and builds the factual answer |
-| `tools.py` | Requests historical order records and finds the matching order |
-| `policy.md` | Shop rules and boundaries, including no promised refund or delivery |
-| `requirements.txt` | Packages that must be installed |
-| `.env` | Private local configuration holding the DeepSeek key |
-
-Respond to their actual answer: identify what is right, then kindly correct any
-swapped or missing roles with one clear explanation. An incorrect answer is useful
-evidence for feedback, not a reason to restart the project. If several are wrong,
-use one compact mapping rather than six separate lessons. Accept simple wording.
-
-This final checkpoint records **participation and feedback, not a perfect score**.
-A substantive combined attempt, including honest uncertainty, can complete it after
-feedback; do not require a retake. For an empty/off-topic answer or only “done”,
-invite a real attempt. Answer voluntary follow-up questions briefly.
-
-After Step 1 and Step 2 are saved, the instructor explanation has taken place,
-and the combined attempt has received feedback, save `project-completed`.
-Only on success say: “Your project is completed and your progress is saved.
-You've run a support app and connected the jobs of its files. The instructor's
-deployment demonstration comes next, outside this project.”
-
-Stop the tracked flow here. No Azure account, public link, image build, extra quiz,
-or deployment completion record is required. Never imply deployment occurred merely
-because the project is complete.
+No file-answer exercise, Dockerfile explanation, image build, Azure deployment,
+public link, or further checkpoint is required. The instructor may explain files
+and demonstrate deployment separately; those activities do not delay completion.

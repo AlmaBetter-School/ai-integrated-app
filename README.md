@@ -7,8 +7,8 @@ A friendly reply helps, but you also need someone to check what happened and exp
 what you can do. In this project, Python looks up an order and DeepSeek helps choose
 an appropriate response using the shop's rules.
 
-You will understand a customer's problem, run the support app on your laptop,
-and answer one combined question after the instructor explains its files.
+You will understand a customer's problem and get the support app working on your
+laptop. Once an order question and follow-up work, your project is complete.
 No previous AI, API, or cloud experience is assumed.
 
 ## Before the project: instructor-guided setup
@@ -29,8 +29,10 @@ Keep all the extracted files together, including `.almabetter`, `.vscode`, and
 these folders. You do not need to fork or clone the project or install Git.
 Your instructor will help get the coding assistant ready in VS Code if needed.
 
-The guide starts registration: name, email, college, and year, **one at a time**.
-It saves these through the included workshop MCP connection. Then it asks about
+The guide asks name, email, college, and year, **one at a time**, showing progress
+from 1 of 4 to 4 of 4. All four answers must be saved through the workshop MCP
+connection before familiarity begins. After giving your name, expect the email
+question next. Then the guide asks about
 Python, terminal use, and APIs **one question at a time**, records the familiar
 concepts once, and starts the problem story with a simple flowchart. The connection
 is already configured in `.vscode/mcp.json`; resolve permissions if prompted, without
@@ -41,21 +43,18 @@ adding a separate MCP setup lesson. If you already have the folder open, start a
 | Activity | What happens | Progress recorded |
 |---|---|---|
 | Step 1: the problem | Meet the customer, follow the support flowchart, answer one conceptual choice question | Step 1 completed |
-| Step 2: run locally | Choose your OS, prepare Python, add the key privately, open the app and try a conversation | Step 2 completed |
-| Final check | Instructor explains the six main project files. Submit one combined answer and receive feedback | Project completed |
+| Step 2: run locally | Choose your OS, prepare Python, add the key privately, open the app and try an order question and follow-up | Step 2 completed, then Project completed |
 
 After the problem question, the guide asks your operating system. During setup,
 it shows the explanation, copyable command, and expected result in **normal chat**.
 A short question prompt then checks what happened, such as “Finished without errors”,
 “Still running”, or “I see an error”. Instructions stay visible in the chat; they
 are not hidden inside the prompt. The guide waits before continuing.
-“Live” here means working on **your laptop**. The instructor explains the code;
-the agent does not give another file-by-file lesson. The final question asks what
-`app.py`, `agent.py`, `tools.py`, `policy.md`, `requirements.txt`, and `.env` do,
-all in one answer. Dockerfile is excluded from explanations and questions. Feedback
-explains what is right and corrects misunderstandings; this is a learning activity, not a perfect-score
-exam. The instructor's deployment demonstration follows **outside the project**.
-No Docker build or Azure deployment is needed for project completion.
+“Live” here means working on **your laptop**. Once you see a factual order reply
+and a follow-up works, the guide saves Step 2 and then Project completed. A page
+loading or an error reply alone is not enough. No file-answer quiz follows.
+The instructor may explain the files and demonstrate deployment separately;
+those activities are outside the tracked project.
 
 ## File reference for the instructor
 
@@ -149,7 +148,8 @@ Progress is saved using plain IDs:
 
 The existing MCP tool saves each as a `step_completed` event. A dashboard should
 interpret `project-completed` as overall completion; it is not a new database event
-type. Written answers remain in chat. Earlier records remain unchanged; new saves
+type. It is saved immediately after the working-local-app checkpoint succeeds.
+Earlier records remain unchanged; new saves
 use the IDs above without version prefixes.
 
 ## Maintainer checks
