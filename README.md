@@ -86,18 +86,36 @@ matching command before you run it. Use Python 3.13.
 
 ```sh
 python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
 **Windows PowerShell**
 
 ```powershell
 py -3.13 -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 ```
 
-Copy `.env.example` to `.env` using the file explorer only if `.env` does not already
-exist. Paste the workshop-provided DeepSeek key into that private file:
+Run each command separately as the guide prompts you. Activation normally shows
+`(.venv)` and lasts for this terminal session. Keep using the same terminal; activate
+again if you open a new one. The environment folder remains between sessions.
+
+Copy the example settings from the project terminal without overwriting an existing `.env`:
+
+```sh
+# macOS / Linux
+cp -n .env.example .env
+```
+
+```powershell
+# Windows PowerShell
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+```
+
+No output is normal; check for `.env` in the file explorer. Open it in the editor
+and paste the workshop-provided DeepSeek key into that private file:
 
 ```dotenv
 DEEPSEEK_API_KEY=your_key_here
@@ -112,12 +130,12 @@ Start the app:
 
 ```sh
 # macOS / Linux
-.venv/bin/python app.py
+python app.py
 ```
 
 ```powershell
 # Windows PowerShell
-.venv\Scripts\python.exe app.py
+python app.py
 ```
 
 Open the local address printed in the terminal, usually `http://localhost:7860`.

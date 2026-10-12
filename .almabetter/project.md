@@ -26,7 +26,7 @@ session rather than registering again.
 
 “Wait” means wait for the answer to the question just asked, not for a separate
 “continue” message. Each submitted answer immediately triggers the next action:
-briefly acknowledge it and ask the next missing question in the same response.
+ask the next missing question directly in the same response. Do not echo the answer.
 Never reply with just “Thanks”, “Noted”, or “I'll wait” after receiving an answer.
 
 - In ordinary chat: ask one question and yield. When the learner replies, process
@@ -40,7 +40,7 @@ Never reply with just “Thanks”, “Noted”, or “I'll wait” after receiv
 - Stop only for an unanswered question, an unresolved error/permission requiring
   input, an explicit pause, or successful project completion.
 
-Example: name answer “Sam” → “Thanks, Sam. Registration 2 of 4: Which email should
+Example: name answer “Sam” → “Registration 2 of 4: Which email should
 we use for your workshop registration?” Email answer → college question; college
 answer → year question; year answer → save registration → first Python question.
 Before yielding, check: have I asked the next question or explained a real blocker?
@@ -53,6 +53,12 @@ Reading the guide in the known open project confirms its presence. If no workspa
 can be identified, ask one clarification instead of inventing a path.
 
 ### Registration — four required answers before moving on
+
+Keep registration replies simple: ask the next numbered question directly.
+Never use “Thanks, <answer>”, repeat the email/college/year, or treat the latest
+answer as a name. A stored name is only a name, not a template for every response.
+After name → ask email; after email → ask college; after college → ask year.
+After year → save, then say “Your registration is saved” and ask Python familiarity.
 
 **Collect first, save second.** Use ordinary chat for registration, not question
 pop-ups, `register_student_form`, or any other MCP form. The direct tool titled
@@ -271,6 +277,7 @@ the learner or ask all checks in one form. Each row follows its instructions in 
 | A. Terminal | Can you see the terminal panel? | Yes / I need help finding it |
 | B. Python | What did the version check show? | Python 3.13 / A different version / An error |
 | C. Environment | Was the project environment created? | Folder appeared, no error / Still running / Error or unsure |
+| C. Activation | Does the terminal show (.venv)? | Yes / No or an error |
 | D. Packages | Did installation finish? | Finished without errors / Still running / I see an error |
 | E. Settings file | Is the settings file ready? | Created or already present / I need help |
 | F. Key | Have you saved the key privately? | Saved / I need help |
@@ -284,7 +291,7 @@ For example, with macOS/Linux already confirmed, the installation chat message i
 “Now we'll install the packages this app needs. Run this in the VS Code terminal:
 
 ```sh
-.venv/bin/python -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 Download messages are normal. Wait until the terminal prompt returns without an
@@ -319,8 +326,28 @@ place for this app's packages; it doesn't create another computer.”
 Use `py -3.13 -m venv .venv` on Windows. On macOS/Linux use the verified Python
 3.13 interpreter, for example `python3 -m venv .venv` only if B confirmed that version.
 The command may finish without printing anything: look for `.venv` and no error.
-Reuse a suitable existing environment rather than recreating it. We will call its
-Python directly; no activation command or new lesson is needed.
+Reuse a suitable existing environment rather than recreating it. Wait for its
+creation to succeed before giving activation as the next separate action.
+
+### C continued. Activate the environment
+
+“Now we'll tell this terminal to use the project's Python and packages.”
+Show only the command for the student's terminal:
+
+| Terminal | Command |
+|---|---|
+| macOS/Linux zsh or bash | `source .venv/bin/activate` |
+| Windows PowerShell | `.\.venv\Scripts\Activate.ps1` |
+
+Expected: `(.venv)` at the start of the terminal prompt. Ask the activation check
+and wait. Keep using this same terminal for installation and running the app.
+Activation lasts for this terminal session, not permanently across new terminals
+or restarts. If they open a new terminal, guide activation again from the project
+folder. The `.venv` folder remains; do not recreate it just to activate it.
+If activation fails, explain the reported error before proceeding. On a machine
+where PowerShell blocks scripts, use the explicit environment Python path for
+subsequent commands (`.venv\Scripts\python.exe`) without changing execution policy;
+explain that this uses the same environment without an activated prompt.
 
 ### D. Install what the app needs
 
@@ -329,8 +356,8 @@ inside the environment we just created.” Give only the matching command:
 
 | System | Command |
 |---|---|
-| Windows PowerShell | `.venv\Scripts\python.exe -m pip install -r requirements.txt` |
-| macOS/Linux | `.venv/bin/python -m pip install -r requirements.txt` |
+| Windows PowerShell | `python -m pip install -r requirements.txt` |
+| macOS/Linux | `python -m pip install -r requirements.txt` |
 
 Explain that scrolling download messages are normal. Wait until the prompt returns
 without an installation error. Don't start the app while installation is running.
@@ -338,12 +365,19 @@ If it failed, ask for the relevant error text and help before moving on.
 
 ### E. Prepare the private settings file
 
-“The app needs a private setting to connect to its AI service. The project gives
-us an example file to start from.” In the VS Code file explorer, copy
-`.env.example`, paste it in the same project folder, and rename the copy `.env`.
-Guide these clicks one at a time if needed. If `.env` already exists, reuse it;
-do not overwrite it. Wait for the learner to confirm the file is ready. Inspect
-only file existence if needed, never its contents.
+“The app needs a private settings file for its AI key. Run this command in the
+same VS Code terminal, inside the project folder. It copies the example to `.env`
+and keeps an existing `.env` unchanged.” Show only the matching command:
+
+| Terminal | Command |
+|---|---|
+| macOS/Linux | `cp -n .env.example .env` |
+| Windows PowerShell | `if (!(Test-Path .env)) { Copy-Item .env.example .env }` |
+
+No output is normal. Ask the learner to confirm `.env` is visible in the VS Code
+file explorer, or report an error. Do not run the copy yourself or read its contents.
+If `.env` already exists, reuse it; do not overwrite it. Then guide adding the key
+privately in the editor as the next separate action.
 
 ### F. Add the DeepSeek key privately
 
@@ -358,7 +392,8 @@ any access/balance issue when it occurs, without adding other provider choices.
 
 “We've prepared the packages and access key. This command starts the app's Gradio
 screen. Leave this terminal running while you use it.”
-Windows: `.venv\Scripts\python.exe app.py`; macOS/Linux: `.venv/bin/python app.py`.
+In the same activated terminal, use `python app.py` on either OS. If using the
+Windows activation fallback, show `.venv\Scripts\python.exe app.py` instead.
 Show only the learner's command, then wait for its output. Success is a printed
 local URL without a startup error. Here the terminal stays busy; unlike installation,
 returning to a prompt is not required. Never launch a second copy unnecessarily.

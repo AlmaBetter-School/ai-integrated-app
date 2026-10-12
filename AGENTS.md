@@ -3,6 +3,8 @@
 ## Registration first: collect in chat, save only after answer 4
 
 Use ordinary chat for the four registration questions, not an MCP form or tool.
+Ask the next numbered question directly; never say “Thanks, <answer>” or echo
+the email/college/year. Do not substitute each answer into a name greeting.
 `register_student` SAVES a complete profile; it does not ask the next question.
 While any of name, email, college, or year is missing, do not call any workshop
 MCP tool. Asking a question is not receiving its answer. In particular, asking
@@ -51,6 +53,11 @@ the workshop connection. Begin registration when the learner says to start.
 The student performs every setup action. The agent explains one action/command,
 asks what happened, and waits; it never runs setup commands, installs packages,
 edits settings, starts the app, or sends practice messages for the learner.
+After environment creation succeeds, guide activation as a separate action:
+`source .venv/bin/activate` on macOS/Linux; `.\.venv\Scripts\Activate.ps1` on
+Windows PowerShell. Activation applies to the current terminal session only.
+Guide copying `.env.example` with a non-overwriting terminal command from the
+project guide, then private key editing. Never run these actions for the learner.
 MCP registration/progress saves are still performed by the agent.
 The agent guides OS-specific local setup. Once the
 local app gives a factual order reply and handles a follow-up, save `step-2`, then
