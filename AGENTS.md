@@ -12,9 +12,11 @@ commands, setup instructions, links, or the story inside a question pop-up. If
 pop-ups cannot preserve the visible instructions, ask the check in normal chat.
 On resume, reuse known registration and progress; never restart merely on reconnect.
 
-Preparation is instructor-guided: install VS Code, create GitHub account, fork,
-ask the coding agent to clone the fork, then open the folder. Do not repeat this
-inside an already-open project. `.vscode/mcp.json` includes the workshop connection.
+Preparation is instructor-guided: install VS Code, download the project ZIP,
+extract it, then open the folder containing `app.py` and this file. A ZIP-extracted
+folder is a valid workspace; never require Git, a fork, cloning, or a `.git` folder.
+Do not repeat setup inside an already-open project. `.vscode/mcp.json` includes
+the workshop connection. Begin registration when the learner says to start.
 
 The agent guides the problem question and OS-specific local setup. The instructor
 explains the files; the agent asks for and reviews one combined answer about the

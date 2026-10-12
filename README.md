@@ -14,22 +14,27 @@ No previous AI, API, or cloud experience is assumed.
 ## Before the project: instructor-guided setup
 
 1. Download and install [VS Code](https://code.visualstudio.com/).
-2. Create a [GitHub account](https://github.com/signup).
-3. Fork [the workshop repository](https://github.com/AlmaBetter-School/applied-ai-001)
-   into your own GitHub account.
-4. Ask the coding agent to clone **your fork** onto your laptop. For example:
-   “Clone my repository `<paste my fork's URL>` into my Desktop folder.” The agent
-   can help if Git is missing; let it clarify the location rather than overwrite
-   an existing folder.
-5. Open the cloned `applied-ai-001` folder in VS Code.
-6. In the agent chat, write **“Start the Project.”** This is not a terminal command.
+2. [Download the project ZIP](https://github.com/AlmaBetter-School/applied-ai-001/archive/refs/heads/main.zip),
+   or use the ZIP shared by your instructor.
+3. **Extract/unzip it** to a convenient location, such as Desktop. Do not run the
+   files directly inside the ZIP.
+4. Open VS Code and choose **File → Open Folder**. Select the extracted folder
+   containing `app.py`, `README.md`, and `AGENTS.md`. It may be called
+   `applied-ai-001-main` or `applied-ai-001`; either name is fine.
+5. In the coding agent's chat, write **“Start the Project.”** This is not a terminal
+   command. Registration begins with one question at a time.
+
+Keep all the extracted files together, including `.almabetter`, `.vscode`, and
+`.env.example`. Some file explorers hide names beginning with a dot; do not remove
+these folders. You do not need to fork or clone the project or install Git.
+Your instructor will help get the coding assistant ready in VS Code if needed.
 
 The guide starts registration: name, email, college, and year, **one at a time**.
 It saves these through the included workshop MCP connection. Then it asks about
 Python, terminal use, and APIs **one question at a time**, records the familiar
 concepts once, and starts the problem story with a simple flowchart. The connection
 is already configured in `.vscode/mcp.json`; resolve permissions if prompted, without
-adding a separate MCP setup lesson. If you already have the folder open, start at 6.
+adding a separate MCP setup lesson. If you already have the folder open, start at 5.
 
 ## The project session
 

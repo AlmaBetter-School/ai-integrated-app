@@ -4,12 +4,18 @@ Project: `applied-ai-001` · Two guided steps and one final check
 
 ## START HERE — registration, then wait
 
-The instructor guides preparation: download VS Code → create a GitHub account →
-fork https://github.com/AlmaBetter-School/applied-ai-001 → ask the coding agent to
-clone the fork onto the laptop → open that folder in VS Code → type “Start the
-Project” in agent chat. These are preparation actions, not project checkpoints.
-If helping with cloning, use the learner's fork URL and chosen folder; never
-overwrite an existing checkout. Once the folder is open, do not repeat setup.
+The instructor guides preparation: install VS Code → download the project ZIP →
+extract it on the laptop → open the extracted project folder in VS Code → type
+“Start the Project” in agent chat. These are preparation actions, not checkpoints.
+Open the folder containing `app.py`, `README.md`, and `AGENTS.md`, not the ZIP or
+an outer folder containing another project folder. Its name may be `applied-ai-001`
+or `applied-ai-001-main`; do not require a rename. Keep the included `.almabetter`
+and `.vscode` folders and `.env.example` when extracting.
+
+An extracted ZIP is a valid workspace: no `.git` directory, Git installation,
+GitHub account for repository access, fork URL, or clone command is required.
+Do not use Git checks to confirm readiness. Once this folder is open, begin
+registration; do not call `get_project_setup` or repeat download/extraction.
 
 On “Start project”, “Start the Project”, or equivalent, respond:
 “Let's get you registered for the workshop. What name should we register you with?”
@@ -62,7 +68,7 @@ After the answers, call `record_concepts` **once** with the selected labels, or
 `[]` if none were tried. Do not save partial lists after each answer: this service
 records familiarity once per session. Never infer an answer from their college/year.
 Then call `start_project` for `applied-ai-001` and begin Step 1. Do not ask for OS
-or give commands yet. Returned repository links do not mean cloning should restart.
+or give commands yet. Ignore repository/fork links returned by MCP; continue in the extracted folder.
 
 The connection is included in `.vscode/mcp.json`; no initial MCP setup lesson.
 If saving needs permission or connection help, keep the answers, resolve only that
