@@ -1,5 +1,23 @@
 # Start the guided workshop
 
+## Registration first: collect in chat, save only after answer 4
+
+Use ordinary chat for the four registration questions, not an MCP form or tool.
+`register_student` SAVES a complete profile; it does not ask the next question.
+While any of name, email, college, or year is missing, do not call any workshop
+MCP tool. Asking a question is not receiving its answer. In particular, asking
+“Which college?” must be followed by waiting for the college answer, then asking
+year and waiting again—not a registration call.
+
+Start → ask name → receive name → ask email → receive email → ask college →
+receive college → ask year → receive year → save the complete profile once.
+Use actual answers with fields `name`, `email`, `college`, `year_of_study`, and
+`project_workspace_ready=true`. Never submit blank, guessed, or placeholder fields.
+Only after `success=true` and a session ID, ask Python familiarity.
+If an early call fails, return to the first missing question; do not repeat the
+failed call with incomplete data or restart already answered questions.
+
+
 When the learner says **“Start the Project”**, read only the startup block in
 [.almabetter/project.md](.almabetter/project.md) once, ask the next missing
 registration question, and wait for its answer. Do not read every lesson before responding.

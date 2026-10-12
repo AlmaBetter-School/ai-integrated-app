@@ -30,7 +30,9 @@ these folders. You do not need to fork or clone the project or install Git.
 Your instructor will help get the coding assistant ready in VS Code if needed.
 
 The guide asks name, email, college, and year, **one at a time**, showing progress
-from 1 of 4 to 4 of 4. All four answers must be saved through the workshop MCP
+from 1 of 4 to 4 of 4 in ordinary chat. The guide collects all four answers before
+calling registration once; no registration tool should run while college or year
+is still unanswered. All four answers must be saved through the workshop MCP
 connection before familiarity begins. After giving your name, expect the email
 question next—no need to type “continue”. Each answer leads straight to the next
 question, including answers submitted through a question prompt. Then the guide asks about

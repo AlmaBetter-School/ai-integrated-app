@@ -54,6 +54,30 @@ can be identified, ask one clarification instead of inventing a path.
 
 ### Registration — four required answers before moving on
 
+**Collect first, save second.** Use ordinary chat for registration, not question
+pop-ups, `register_student_form`, or any other MCP form. The direct tool titled
+“Register student” (`register_student`) saves the whole profile; it cannot collect
+missing fields. No workshop MCP calls are permitted while a profile answer is
+missing. Do not call it to ask a question, after each field, in parallel with a
+question, or immediately after asking year but before receiving the year answer.
+
+Follow this exact exchange (the bracketed answers are supplied by the learner):
+
+1. Agent asks name. Learner answers [name]. No MCP call.
+2. Agent asks email. Learner answers [email]. No MCP call.
+3. Agent asks college. Learner answers [college]. No MCP call.
+4. Agent asks year. Learner answers [year]. Only now check all four answers.
+5. Call `register_student` once with `name`, `email`, `college`, `year_of_study`
+   mapped to those actual answers, plus `project_workspace_ready=true`.
+6. Read the result. On `success=true` with a nonempty `student_session_id`, retain
+   the ID and immediately ask Familiarity 1 of 3. Otherwise handle the failure.
+
+The question text itself, “done”, an unanswered popup, and an empty tool result
+are not profile answers. Before calling, ensure each string is nonempty and the
+email looks like an email address; ask only for an invalid/missing field again.
+Use the connected tool's schema; do not pass `year`, `studentName`, or `ctx` in
+place of the documented arguments. Never display the full profile as a tool example.
+
 **Hard gate:** familiarity, OS selection, and setup are blocked
 until all four profile fields are answered AND `register_student` returns
 `success=true` with a nonempty `student_session_id`. A name alone is not registration.
@@ -78,13 +102,23 @@ together, ask the next missing one. Fix only invalid/ambiguous fields. Do not fi
 blanks with placeholders, guessed values, or a previous student's information.
 Use the direct conversational registration tool, not the older combined form.
 
-If the agent already jumped from name to familiarity, recover with “I still need
-the remaining registration details before we continue,” then ask email. Retain
-any familiarity answer already given but do not save it before registration. On a
-failed save, retain all answers and fix the error; do not advance or collect them
-all again. An uncertain result is not success; avoid blind registration retries,
-as every successful call creates a new session. On resume, require verified saved
-registration for this learner/session before skipping these questions.
+### Recover without restarting registration
+
+- Early call failed with fields missing: stop tool calls, retain the answers, and
+  say “Let's finish your registration first.” Ask the first missing field in order.
+  If name/email are known and college is unanswered, ask college; after its reply,
+  ask year. Submit only after the year answer. Do not skip to familiarity.
+- Validation failure with all fields supplied: read the returned error, ask only
+  for the rejected field, then submit the corrected profile. Do not guess a fix.
+- Connection/permission/database failure: retain the answers, explain that saving
+  is blocked, and resolve that specific issue. Do not ask for the profile again.
+- Timeout or unknown outcome: do not blindly resubmit; every successful call makes
+  a fresh session. Check any available original result or ask the instructor to
+  verify whether it saved before retrying. Never invent a session ID or success.
+- Already saved successfully: reuse the known session; do not register again.
+
+If familiarity was asked too early, retain that answer but finish registration
+first. No familiarity save, project start, or setup until registration succeeds.
 
 ### Familiarity — three separate questions, then one save
 
@@ -168,8 +202,8 @@ result. Send the normal chat message before invoking a question tool; tool argum
 are not a substitute for that message. If this client cannot keep instructions
 visible alongside a pop-up, ask the check in normal chat after the code block.
 
-Registration/familiarity and OS selection collect an answer, so those short
-questions can use prompts. Still ask them one at a time. During setup, prompts
+Registration uses ordinary chat only. Familiarity and OS selection may use short
+question prompts, one at a time; these are not the MCP registration/skills forms. During setup, prompts
 check what happened; they do not deliver the lesson. No preselected option counts
 as an answer. “Still running” means wait; an error/help choice means troubleshoot
 this action in normal chat, then check again. Do not advance or save on those choices.
