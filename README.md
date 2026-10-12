@@ -24,7 +24,7 @@ No previous AI, API, or cloud experience is assumed.
 5. In the coding agent's chat, write **“Start the Project.”** This is not a terminal
    command. Registration begins with one question at a time.
 
-Keep all the extracted files together, including `.almabetter`, `.vscode`, and
+Keep all the extracted files together, including `.github`, `.almabetter`, `.vscode`, and
 `.env.example`. Some file explorers hide names beginning with a dot; do not remove
 these folders. You do not need to fork or clone the project or install Git.
 Your instructor will help get the coding assistant ready in VS Code if needed.
@@ -186,3 +186,23 @@ records remain unchanged; new saves use the IDs above without version prefixes.
 
 Tests simulate the external services and need no key. A live request is a separate
 check requiring network access and a working DeepSeek key.
+
+## If an old flow returns or saving fails
+
+Open the newly extracted folder itself; an older ZIP is not updated automatically.
+The included `.github/copilot-instructions.md` directs VS Code Copilot to this
+workshop's guide. Check that repository instructions are enabled and shown in the
+chat's instruction references. Keep the same chat while working so answers and
+successful save results remain available. Reconnecting MCP does not recover lost
+chat history; use the previous chat to resume when possible.
+
+The configured endpoint currently advertises older fork/clone instructions.
+This project uses its existing direct save tools in this order: full registration,
+all familiarity answers, project start, local-app checkpoint, completion. The
+local workshop guide defines the interactive sequence. Server code is unchanged.
+
+If a save fails, expand the failed tool card and share only its error with the
+instructor, excluding profile details and credentials. A connected MCP or listed
+tool does not prove a database write. The agent must wait for `success: true`
+before reporting a save or moving to its dependent step. This guide cannot fix a
+remote database failure; the actual error is needed to diagnose that separately.

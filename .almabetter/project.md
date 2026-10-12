@@ -1,178 +1,116 @@
 # Order Support: the live workshop
 
-Project: `applied-ai-001` · Registration → familiarity → local setup → completion
+Project: `applied-ai-001` · Registration → familiarity → local setup → Application Live
 
-## START HERE — ask, receive the answer, continue
+## START HERE — the next unanswered question only
 
-The instructor guides preparation: install VS Code → download the project ZIP →
-extract it on the laptop → open the extracted project folder in VS Code → type
-“Start the Project” in agent chat. These are preparation actions, not checkpoints.
-Open the folder containing `app.py`, `README.md`, and `AGENTS.md`, not the ZIP or
-an outer folder containing another project folder. Its name may be `applied-ai-001`
-or `applied-ai-001-main`; do not require a rename. Keep the included `.almabetter`
-and `.vscode` folders and `.env.example` when extracting.
+Students download the ZIP, extract it, open the folder containing `app.py` and
+`AGENTS.md` in VS Code, and say “Start the Project”. This is a valid workspace
+without Git. Keep `.github`, `.almabetter`, `.vscode`, and `.env.example` included.
+Read this startup section once, then ask the next unanswered question. Do not read
+all setup activities or repeatedly inspect the workspace before asking it.
 
-An extracted ZIP is a valid workspace: no `.git` directory, Git installation,
-GitHub account for repository access, fork URL, or clone command is required.
-Do not use Git checks to confirm readiness. Once this folder is open, begin
-registration; do not call `get_project_setup` or repeat download/extraction.
+### Which instructions define this workshop
 
-On “Start project”, “Start the Project”, or equivalent, respond:
-“Let's get you registered. Registration 1 of 4: What name should we register you with?”
-Ask only the next missing field if details are already known. Resume an existing
-session rather than registering again.
+`.vscode/mcp.json` connects to `https://openlabs.almabetter.com/workshop-mcp`.
+The endpoint supplies data-saving tools, but its onboarding prose still describes
+an older fork/clone journey and grouped skills. In this already-open ZIP project,
+follow THIS workshop's question order. Do not call `get_project_setup`, ask for a
+fork, look for `conversation-level.md`, or switch to combined forms. That old file
+is not required. Use the live tool schemas for arguments; use this guide for teaching.
+The endpoint currently offers the five tools in the call table below, not form tools.
+If these tools are unavailable, explain the connection issue instead of inventing
+calls, posting directly to HTTP endpoints, or pretending data was saved.
 
-### Continue after every answer
+### 1. Registration — ask four questions, then save once
 
-“Wait” means wait for the answer to the question just asked, not for a separate
-“continue” message. Each submitted answer immediately triggers the next action:
-ask the next missing question directly in the same response. Do not echo the answer.
-Never reply with just “Thanks”, “Noted”, or “I'll wait” after receiving an answer.
+Use ordinary chat, one question per exchange. On each answer, immediately ask the
+next question. No “Thanks, <answer>”, repeated email, or extra “continue” request.
+A question-tool response, when used later, also counts as an answer; consume it
+and proceed. Wait only when the current question has not been answered.
 
-- In ordinary chat: ask one question and yield. When the learner replies, process
-  that answer and ask the next question; they never need to type Start again.
-- With a question tool: a returned answer or delivered answer event IS the learner's
-  reply. Process it immediately and present the next question. Do not end with an
-  acknowledgement after the tool returns. If an asynchronous tool has no answer
-  yet, wait for its answer event; do not treat an empty result as an answer.
-- After a successful save: continue to the next question in that same turn. A tool
-  result card is not the end of the learning activity.
-- Stop only for an unanswered question, an unresolved error/permission requiring
-  input, an explicit pause, or successful project completion.
-
-Example: name answer “Sam” → “Registration 2 of 4: Which email should
-we use for your workshop registration?” Email answer → college question; college
-answer → year question; year answer → save registration → first Python question.
-Before yielding, check: have I asked the next question or explained a real blocker?
-
-**Reading limit:** this opening block is sufficient. Read it once (through **END OF STARTUP**),
-then ask the question. Do not read all lessons, list files, inspect tools, or run
-setup commands before that question in a known open workspace. If repeated reads
-already appear in chat, stop reading and ask the next missing registration detail.
-Reading the guide in the known open project confirms its presence. If no workspace
-can be identified, ask one clarification instead of inventing a path.
-
-### Registration — four required answers before moving on
-
-Keep registration replies simple: ask the next numbered question directly.
-Never use “Thanks, <answer>”, repeat the email/college/year, or treat the latest
-answer as a name. A stored name is only a name, not a template for every response.
-After name → ask email; after email → ask college; after college → ask year.
-After year → save, then say “Your registration is saved” and ask Python familiarity.
-
-**Collect first, save second.** Use ordinary chat for registration, not question
-pop-ups, `register_student_form`, or any other MCP form. The direct tool titled
-“Register student” (`register_student`) saves the whole profile; it cannot collect
-missing fields. No workshop MCP calls are permitted while a profile answer is
-missing. Do not call it to ask a question, after each field, in parallel with a
-question, or immediately after asking year but before receiving the year answer.
-
-Follow this exact exchange (the bracketed answers are supplied by the learner):
-
-1. Agent asks name. Learner answers [name]. No MCP call.
-2. Agent asks email. Learner answers [email]. No MCP call.
-3. Agent asks college. Learner answers [college]. No MCP call.
-4. Agent asks year. Learner answers [year]. Only now check all four answers.
-5. Call `register_student` once with `name`, `email`, `college`, `year_of_study`
-   mapped to those actual answers, plus `project_workspace_ready=true`.
-6. Read the result. On `success=true` with a nonempty `student_session_id`, retain
-   the ID and immediately ask Familiarity 1 of 3. Otherwise handle the failure.
-
-The question text itself, “done”, an unanswered popup, and an empty tool result
-are not profile answers. Before calling, ensure each string is nonempty and the
-email looks like an email address; ask only for an invalid/missing field again.
-Use the connected tool's schema; do not pass `year`, `studentName`, or `ctx` in
-place of the documented arguments. Never display the full profile as a tool example.
-
-**Hard gate:** familiarity, OS selection, and setup are blocked
-until all four profile fields are answered AND `register_student` returns
-`success=true` with a nonempty `student_session_id`. A name alone is not registration.
-Never mark this gate complete because the learner said “done”, a tool card appeared,
-or the IDE knows their name. Do not copy identity/email from Git, OS, or account data.
-
-Keep the four answers and save status in conversation context only. On each reply,
-find the first missing field and ask exactly that question. Wait only until its answer arrives:
-
-| State | Only permitted next action |
+| After | Ask only this |
 |---|---|
-| Name missing | Ask “Registration 1 of 4: What name should we register you with?” |
-| Name known; email missing | Ask “Registration 2 of 4: Which email should we use for your workshop registration?” |
-| Name/email known; college missing | Ask “Registration 3 of 4: Which college or university are you studying at?” |
-| Name/email/college known; year missing | Ask “Registration 4 of 4: Which year of study are you in?” |
-| All four answered; registration not saved | Call `register_student` with those four answers and `project_workspace_ready=true`. Do not ask familiarity yet. |
-| Save succeeded with session ID | Keep that ID; now begin familiarity. |
+| Start, no profile known | Registration 1 of 4: What name should we register you with? |
+| Name answer | Registration 2 of 4: Which email should we use for your workshop registration? |
+| Email answer | Registration 3 of 4: Which college or university are you studying at? |
+| College answer | Registration 4 of 4: Which year of study are you in? |
+| Year answer | Save the complete profile using `register_student`, then check the result. |
 
-Show only the current question, not this table or a combined form. Reuse fields
-explicitly supplied by this learner in the current journey; if several arrived
-together, ask the next missing one. Fix only invalid/ambiguous fields. Do not fill
-blanks with placeholders, guessed values, or a previous student's information.
-Use the direct conversational registration tool, not the older combined form.
+No workshop tool calls while any profile field is missing. Asking college/year
+is NOT receiving its answer. Never fill blanks from account/Git/OS information,
+placeholders, or another learner. Reuse actual answers from this conversation;
+ask only for a missing/invalid field. After verified registration success, retain
+the returned session ID and ask the first familiarity question in the same turn.
 
-### Recover without restarting registration
+### 2. Familiarity — three individual answers, then one save
 
-- Early call failed with fields missing: stop tool calls, retain the answers, and
-  say “Let's finish your registration first.” Ask the first missing field in order.
-  If name/email are known and college is unanswered, ask college; after its reply,
-  ask year. Submit only after the year answer. Do not skip to familiarity.
-- Validation failure with all fields supplied: read the returned error, ask only
-  for the rejected field, then submit the corrected profile. Do not guess a fix.
-- Connection/permission/database failure: retain the answers, explain that saving
-  is blocked, and resolve that specific issue. Do not ask for the profile again.
-- Timeout or unknown outcome: do not blindly resubmit; every successful call makes
-  a fresh session. Check any available original result or ask the instructor to
-  verify whether it saved before retrying. Never invent a session ID or success.
-- Already saved successfully: reuse the known session; do not register again.
+Say “Your registration is saved. Three quick questions will help me guide you.”
+Show just the current question and its choices, never this entire table.
 
-If familiarity was asked too early, retain that answer but finish registration
-first. No familiarity save, project start, or setup until registration succeeds.
+| Order | Question | Choices | Label if A |
+|---|---|---|---|
+| 1 | Familiarity 1 of 3: Have you tried writing a small Python program? | A. I've tried it. B. I've heard of it. C. It's new to me. | `Python` |
+| 2 | Familiarity 2 of 3: Have you typed a command in a terminal—the text panel where commands run? | A. I've tried it. B. I've only seen it. C. It's new to me. | `Command line / Terminal` |
+| 3 | Familiarity 3 of 3: Have you used an API—a way for one program to request information from another? | A. I've tried it. B. I've heard of it. C. It's new to me. | `APIs / REST APIs` |
 
-### Familiarity — three separate questions, then one save
+Wait for each answer, then ask the next question immediately. Accept natural
+answers. For B/C say “We'll take that from the basics”, without adding the label.
+Do not skip questions after “all new”; briefly confirm each remaining topic
+separately. Reuse individually answered questions on resume. Save only after all
+three answers, using labels for A answers or `[]` for none. No partial saves.
+After `record_concepts` succeeds, call `start_project`. On success immediately
+ask “Which operating system are you using? Windows / macOS / Linux / Not sure”.
+Skip the problem statement, story, flowchart, and quiz. Reuse an OS already known.
 
-Only after registration succeeds, say: “Your registration is saved. Three quick
-questions will help me guide you. This isn't a test.” Ask **only question 1**.
-Each question must be presented separately and receive its own answer before the
-next appears. Never combine them into a form, multi-select, or one chat message.
-Do not call `record_concepts` or `record_concepts_form` after only one or two answers.
+### Exact MCP call order — tutor reference, never show as a student form
 
-| Current state | Next action |
-|---|---|
-| Python question not answered | Ask “Familiarity 1 of 3: Have you tried writing a small Python program?” Options: A. I've tried it. B. I've heard of it. C. It's new to me. |
-| Python answered; terminal not answered | Briefly acknowledge, then ask “Familiarity 2 of 3: Have you typed a command in a terminal—the text panel where commands run?” Options: A. I've tried it. B. I've only seen it. C. It's new to me. |
-| Terminal answered; API not answered | Briefly acknowledge, then ask “Familiarity 3 of 3: Have you used an API—a way for one program to request information from another?” Options: A. I've tried it. B. I've heard of it. C. It's new to me. |
-| All three individually answered | Call `record_concepts` once with the tried concepts. |
-| Familiarity save succeeded | Call `start_project` for `applied-ai-001`; after success ask the OS. |
+Calls are sequential. Use actual collected values, never the descriptions below.
+The client supplies tool arguments only; do not send `ctx` or an HTTP/JSON-RPC wrapper.
 
-Accept letters or natural answers. For A, include the exact catalog label:
-Python → `Python`; terminal → `Command line / Terminal`; API → `APIs / REST APIs`.
-For B/C, say “We'll take that from the basics” and ask the next question; do not
-include that label in the saved list. If all three answers are B/C, save `[]`.
-Do not infer answers from registration, skip remaining questions after “all new”,
-or send partial lists. If they volunteer a combined answer, briefly confirm each
-remaining topic through its separate question. On resume, reuse questions already
-asked and individually answered; do not restart the three-question sequence.
+| When | Tool | Arguments | Required success evidence |
+|---|---|---|---|
+| Four profile answers | `register_student` | `name`, `email`, `college`, `year_of_study`, `project_workspace_ready: true` | `success: true` and returned `student_session_id` |
+| Three familiarity answers | `record_concepts` | `student_session_id` from registration; `completed_concepts`: list of exact labels above | `success: true` |
+| Familiarity saved | `start_project` | Same `student_session_id`; `project_id: "applied-ai-001"` | `success: true` |
+| Working local order reply and follow-up | `complete_step` | Same `student_session_id`; `project_id: "applied-ai-001"`; `step_id: "step-2"` | `success: true` |
+| Local-app checkpoint saved | `complete_step` | Same session/project; `step_id: "project-completed"` | `success: true` |
 
-A question-tool answer is a real answer: immediately ask the next question in the
-same turn. After question 3, save all familiarity together. If the save fails,
-retain the answers and fix only the save; do not advance to OS or falsely claim success.
+Interpret the actual tool result, not a tool-card title. If `isError` is true or
+there is a transport/permission error, saving failed. Read structured content if
+present, otherwise the JSON text content returned by the tool. Do not assume the
+result must use only one of these formats. Missing/ambiguous success is pending,
+not saved. Keep the exact session ID returned by registration (currently `st_`
+plus 32 hexadecimal characters); never replace it with a project ID or email.
+Follow-up tools depend on this ID and the preceding successful calls. Do not batch
+or parallelize writes. A success acknowledgement is the server's save confirmation;
+never claim to have independently inspected the database.
 
-After `record_concepts` and `start_project` succeed, immediately ask:
-“Which operating system are you using?” Options: Windows / macOS / Linux / Not sure.
-Reuse an OS already supplied. After its answer, guide local setup. **Skip the
-problem statement, story, flowchart, and conceptual quiz entirely.** Ignore
-repository/fork links returned by MCP; continue in the extracted folder.
+### Failure and restart rules
 
-The connection is included in `.vscode/mcp.json`; no initial MCP setup lesson.
-If saving needs permission or connection help, keep the answers, resolve only that
-issue, and do not pretend success. Respect denied approval.
+- Missing/invalid profile: retain answers, ask only the needed field; save after
+  all four are valid. No familiarity or setup before registration succeeds.
+- Explicit validation failure: correct the field named by the actual error.
+- Connection, approval, or database error: describe that specific failure, keep
+  answers, and fix it before advancing. Never replace failure with a thank-you.
+- Registration timeout/unknown result: do not blindly retry; registration creates
+  a new session on every successful call. Use an available original result or ask
+  the instructor to verify the save. Do not invent a session to continue.
+- Other saves: identical retries are safe; retry a transient failure once. Do not
+  send a changed familiarity list after a successful save.
+- “Start” again or reconnect in the same chat: resume at the first unanswered
+  question or pending save using known results; do not rerun fork/clone or register.
+- New chat without history: state that prior progress cannot be verified here.
+  Ask whether to return to the previous chat or begin a new registration. Do not
+  ask the learner to supply an internal ID, guess progress, or claim it was restored.
+  If this is clearly their first start, begin with the name question directly.
 
-Never save registration details, session IDs, keys, or chat answers in project
-files/logs. Never request a key in chat or read/display `.env`. Registration creates
-a fresh session each call: do not blindly retry after an uncertain result. Reuse
-known successful results on reconnect; ask where the learner stopped if unknown.
+Never store profile answers, session IDs, or keys in project files or logs. Never
+ask for a key in chat or read/display `.env`. The guide cannot repair the remote
+database or restore an unknown session: report blockers honestly.
 
-**END OF STARTUP.** Next is the current profile/familiarity question, its save, or OS selection—not
-another full-guide read. Load the shared rules below once and only the current
-activity. The instructor teaches the code files; the agent does not run that lesson.
+**END OF STARTUP.** Next load the shared rules once and only the current local
+setup activity. The student executes commands; the agent guides and saves progress.
 
 ## Shared rules and completion records
 
