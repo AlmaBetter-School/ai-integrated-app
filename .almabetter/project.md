@@ -86,32 +86,40 @@ all again. An uncertain result is not success; avoid blind registration retries,
 as every successful call creates a new session. On resume, require verified saved
 registration for this learner/session before skipping these questions.
 
-### Familiar concepts — one small conversation at a time
+### Familiarity — three separate questions, then one save
 
-Only after the registration gate above succeeds, say: “Your registration is saved. Three quick
-questions will help me explain things at your pace. This isn't a test.”
-Ask only the first question below and wait. Continue one question per turn;
-never show all three together or open a multi-select form.
+Only after registration succeeds, say: “Your registration is saved. Three quick
+questions will help me guide you. This isn't a test.” Ask **only question 1**.
+Each question must be presented separately and receive its own answer before the
+next appears. Never combine them into a form, multi-select, or one chat message.
+Do not call `record_concepts` or `record_concepts_form` after only one or two answers.
 
-| Order | Question to ask | Choices | Catalog label |
-|---|---|---|---|
-| 1 | Have you tried writing a small Python program? | A. I've tried it. B. I've heard of it. C. It's new to me. | `Python` |
-| 2 | Have you typed a command in a terminal—the text panel where commands run? | A. I've tried it. B. I've only seen it. C. It's new to me. | `Command line / Terminal` |
-| 3 | Have you used an API—a way for one program to request information from another? | A. I've tried it. B. I've heard of it. C. It's new to me. | `APIs / REST APIs` |
+| Current state | Next action |
+|---|---|
+| Python question not answered | Ask “Familiarity 1 of 3: Have you tried writing a small Python program?” Options: A. I've tried it. B. I've heard of it. C. It's new to me. |
+| Python answered; terminal not answered | Briefly acknowledge, then ask “Familiarity 2 of 3: Have you typed a command in a terminal—the text panel where commands run?” Options: A. I've tried it. B. I've only seen it. C. It's new to me. |
+| Terminal answered; API not answered | Briefly acknowledge, then ask “Familiarity 3 of 3: Have you used an API—a way for one program to request information from another?” Options: A. I've tried it. B. I've heard of it. C. It's new to me. |
+| All three individually answered | Call `record_concepts` once with the tried concepts. |
+| Familiarity save succeeded | Call `start_project` for `applied-ai-001`; after success ask the OS. |
 
-Accept letters or natural answers. A adds that label; B/C means explain from the
-basics, without marking hands-on familiarity. Keep that nuance in chat; the server
-stores only the selected labels. Acknowledge “We'll take that from the basics”
-for B/C and continue; no lesson or follow-up quiz here. Reuse clearly supplied
-answers. If they say all three are new, accept that and skip redundant questions.
-After the answers, call `record_concepts` **once** with the selected labels, or
-`[]` if none were tried. Do not save partial lists after each answer: this service
-records familiarity once per session. Never infer an answer from their college/year.
-After `record_concepts` succeeds, call `start_project` for `applied-ai-001`.
-After that start succeeds, immediately ask: “Let's get your order-support app
-working on your laptop. Which operating system are you using?”
-Choices: Windows / macOS / Linux / Not sure. Reuse an OS already supplied.
-After its answer, begin local setup; do not insert a problem quiz or another readiness check. Ignore repository/fork links returned by MCP; continue in the extracted folder.
+Accept letters or natural answers. For A, include the exact catalog label:
+Python → `Python`; terminal → `Command line / Terminal`; API → `APIs / REST APIs`.
+For B/C, say “We'll take that from the basics” and ask the next question; do not
+include that label in the saved list. If all three answers are B/C, save `[]`.
+Do not infer answers from registration, skip remaining questions after “all new”,
+or send partial lists. If they volunteer a combined answer, briefly confirm each
+remaining topic through its separate question. On resume, reuse questions already
+asked and individually answered; do not restart the three-question sequence.
+
+A question-tool answer is a real answer: immediately ask the next question in the
+same turn. After question 3, save all familiarity together. If the save fails,
+retain the answers and fix only the save; do not advance to OS or falsely claim success.
+
+After `record_concepts` and `start_project` succeed, immediately ask:
+“Which operating system are you using?” Options: Windows / macOS / Linux / Not sure.
+Reuse an OS already supplied. After its answer, guide local setup. **Skip the
+problem statement, story, flowchart, and conceptual quiz entirely.** Ignore
+repository/fork links returned by MCP; continue in the extracted folder.
 
 The connection is included in `.vscode/mcp.json`; no initial MCP setup lesson.
 If saving needs permission or connection help, keep the answers, resolve only that
@@ -195,10 +203,18 @@ learning done from progress pending and offer untracked guidance. Never announce
 
 ## Local setup — make the app live on your laptop
 
-After the OS answer, briefly connect the purpose to the first action:
-“A support person checks an order before suggesting what to do. This app helps
-with those checks using practice orders. Let's get it working on your laptop.”
-Then give activity A and its result check in that same response. No extra quiz.
+After the OS answer, say “Let's get the app running on your laptop,” then give
+activity A and its result check in the same response. No problem explanation.
+
+**Student runs; agent guides.** Do not execute terminal commands, install Python
+or packages, create/edit the settings file, start/stop the application, or send
+practice messages on the student's behalf. Show one action, let the student do
+it, and check their result. MCP registration/progress calls remain agent actions.
+If asked to run a setup action, explain that this workshop practises doing it and
+show the exact command for the student to run. Reading the guide is allowed;
+do not use shell commands to automate setup or troubleshoot by running commands.
+For errors, ask for the relevant error text (never secrets), explain it, then
+show the corrected action for the student to try.
 
 **Live means working on this laptop**, not a public deployment. Start only after
 the OS is known. If unsure, help them identify it before selecting commands. Use
@@ -330,9 +346,8 @@ Then, in the next turn: “Now send: I need it for class. What should I do now?�
 Let them notice the same order stays in context without retyping its number.
 Exact wording/tone need not change; no extra quiz or Orders API question here.
 
-If the learner runs an action, wait for their result. If they explicitly ask the
-agent to execute it, inspect the result and explain what happened; don't have them
-repeat it. “Done” can confirm an action they took, but never invent unseen terminal
+After showing an action, wait for the learner's result. Never execute it for them.
+If they already performed it, reuse their reported result rather than repeating it. “Done” can confirm an action they took, but never invent unseen terminal
 output or a working AI reply. Ask for the missing observation only. Avoid repeated
 checks, file inventories, or a new order-ID search unless the example fails.
 
@@ -363,8 +378,9 @@ Reuse results already observed or reported; do not ask a second final quiz.
 1. Once the local conversation works, call `complete_step` with `step_id="step-2"`.
 2. After that succeeds, call `complete_step` with `step_id="project-completed"`.
    Both calls use the same student session and `project_id="applied-ai-001"`.
-3. Only after both saves succeed say: “Your support app is working on your laptop,
-   and your project completion is saved. You can keep trying the practice questions.”
+3. Only after the working conversation is verified and both saves succeed, say:
+   “**Application Live** — your support app is running on your laptop.
+   Your workshop completion is saved. Keep this terminal open while using the app.”
    Then end the guided journey.
 
 If the final save fails after Step 2 succeeds, retry only the pending completion

@@ -35,7 +35,8 @@ connection before familiarity begins. After giving your name, expect the email
 question next—no need to type “continue”. Each answer leads straight to the next
 question, including answers submitted through a question prompt. Then the guide asks about
 Python, terminal use, and APIs **one question at a time**, records the familiar
-concepts once, then asks your operating system and starts local setup. The connection
+concepts only after all three answers, then asks your operating system and guides
+local setup. There is no separate problem-statement lesson or quiz. The connection
 is already configured in `.vscode/mcp.json`; resolve permissions if prompted, without
 adding a separate MCP setup lesson. If you already have the folder open, start at 5.
 
@@ -46,15 +47,16 @@ adding a separate MCP setup lesson. If you already have the folder open, start a
 | 1. Registration | Name → email → college → year, one at a time; save all four |
 | 2. Familiarity | Python → terminal → APIs, three separate short questions |
 | 3. Local setup | Choose OS; prepare Python, environment, packages and private key; open the local link |
-| 4. Completion | Try an order question and follow-up; save Project completed |
+| 4. Application Live | Try an order question and follow-up; save completion and celebrate the working app |
 
-During setup,
-it shows the explanation, copyable command, and expected result in **normal chat**.
+During setup, **you run each command yourself**; the agent does not run it for you.
+It shows the explanation, copyable command, and expected result in **normal chat**.
 A short question prompt then checks what happened, such as “Finished without errors”,
 “Still running”, or “I see an error”. Instructions stay visible in the chat; they
 are not hidden inside the prompt. The guide waits before continuing.
 “Live” here means working on **your laptop**. Once you see a factual order reply
-and a follow-up works, the guide saves Step 2 and then Project completed. A page
+and a follow-up works, the guide saves Step 2 and completion, then says
+**Application Live**. A page
 loading or an error reply alone is not enough. No file-answer quiz follows.
 The instructor may explain the files and demonstrate deployment separately;
 those activities are outside the tracked project.
@@ -146,7 +148,7 @@ Progress is saved using plain IDs:
 | Display label | Saved `step_id` |
 |---|---|
 | Step 2 completed | `step-2` |
-| Project completed | `project-completed` |
+| Application Live (project completed) | `project-completed` |
 
 The existing MCP tool saves each as a `step_completed` event. A dashboard should
 interpret `project-completed` as overall completion; it is not a new database event
