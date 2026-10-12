@@ -32,20 +32,23 @@ Your instructor will help get the coding assistant ready in VS Code if needed.
 The guide asks name, email, college, and year, **one at a time**, showing progress
 from 1 of 4 to 4 of 4. All four answers must be saved through the workshop MCP
 connection before familiarity begins. After giving your name, expect the email
-question next. Then the guide asks about
+question next—no need to type “continue”. Each answer leads straight to the next
+question, including answers submitted through a question prompt. Then the guide asks about
 Python, terminal use, and APIs **one question at a time**, records the familiar
-concepts once, and starts the problem story with a simple flowchart. The connection
+concepts once, then asks your operating system and starts local setup. The connection
 is already configured in `.vscode/mcp.json`; resolve permissions if prompted, without
 adding a separate MCP setup lesson. If you already have the folder open, start at 5.
 
 ## The project session
 
-| Activity | What happens | Progress recorded |
-|---|---|---|
-| Step 1: the problem | Meet the customer, follow the support flowchart, answer one conceptual choice question | Step 1 completed |
-| Step 2: run locally | Choose your OS, prepare Python, add the key privately, open the app and try an order question and follow-up | Step 2 completed, then Project completed |
+| Stage | What happens |
+|---|---|
+| 1. Registration | Name → email → college → year, one at a time; save all four |
+| 2. Familiarity | Python → terminal → APIs, three separate short questions |
+| 3. Local setup | Choose OS; prepare Python, environment, packages and private key; open the local link |
+| 4. Completion | Try an order question and follow-up; save Project completed |
 
-After the problem question, the guide asks your operating system. During setup,
+During setup,
 it shows the explanation, copyable command, and expected result in **normal chat**.
 A short question prompt then checks what happened, such as “Finished without errors”,
 “Still running”, or “I see an error”. Instructions stay visible in the chat; they
@@ -142,15 +145,14 @@ Progress is saved using plain IDs:
 
 | Display label | Saved `step_id` |
 |---|---|
-| Step 1 completed | `step-1` |
 | Step 2 completed | `step-2` |
 | Project completed | `project-completed` |
 
 The existing MCP tool saves each as a `step_completed` event. A dashboard should
 interpret `project-completed` as overall completion; it is not a new database event
 type. It is saved immediately after the working-local-app checkpoint succeeds.
-Earlier records remain unchanged; new saves
-use the IDs above without version prefixes.
+The former problem quiz (`step-1`) is no longer required or emitted. Earlier
+records remain unchanged; new saves use the IDs above without version prefixes.
 
 ## Maintainer checks
 
