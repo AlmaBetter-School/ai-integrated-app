@@ -16,7 +16,6 @@ Built with Python 3.13, [Gradio](https://www.gradio.app/), and the DeepSeek API.
 | `policy.md` | The rules: what help the shop allows |
 | `requirements.txt` | Python dependencies |
 | `.env.example` | Template for the private `.env` settings file |
-| `Dockerfile` | Container image for running the app |
 | `tests/` | Tests with the external services simulated |
 
 ## Setup
@@ -92,12 +91,3 @@ python -m pip check
 
 Tests simulate the external services and need no key. A live request needs
 network access and a working DeepSeek key.
-
-## Docker
-
-```sh
-docker build -t order-support .
-docker run --rm -p 7860:7860 --env-file .env order-support
-```
-
-The image excludes `.env`; pass the key at run time as shown.
