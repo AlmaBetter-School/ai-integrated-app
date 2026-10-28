@@ -30,7 +30,7 @@ demo = gr.ChatInterface(
     examples=[
         "What is CRISPR?",
         "Find recent research papers on small language models",
-        "Explain black holes and find a recent paper about them",
+        "Explain gravitational force and find a recent paper about it",
     ],
     run_examples_on_click=False,  # Clicking an example only fills the box.
 )

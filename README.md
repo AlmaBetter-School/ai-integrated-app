@@ -1,6 +1,6 @@
 # Research Assistant — a small AI agent with tools
 
-Ask a question like *"Explain black holes and find a recent paper about them"*.
+Ask a question like *"Explain gravitational force and find a recent paper about it"*.
 The AI decides which tools to use, Python runs them, and the AI writes a short
 answer with sources.
 
@@ -21,7 +21,7 @@ Both tools are free public APIs with no sign-up. The only key you need is for
  your question
       │
       ▼
- ┌─────────┐   "search_arxiv('black holes')"   ┌──────────────┐
+ ┌─────────┐   "search_arxiv('gravity')"       ┌──────────────┐
  │DeepSeek │ ────────────────────────────────▶ │ Python runs  │
  │ (model) │ ◀──────────────────────────────── │  the tool    │
  └─────────┘          search results           └──────────────┘
@@ -31,7 +31,7 @@ Both tools are free public APIs with no sign-up. The only key you need is for
 ```
 
 1. Python sends the question **and a description of each tool** to DeepSeek.
-2. DeepSeek either asks for a tool (for example `search_arxiv("black holes")`)
+2. DeepSeek either asks for a tool (for example `search_arxiv("gravitational force")`)
    or writes the final answer.
 3. If it asked for a tool, Python runs it and sends the results back. Go to step 2.
 4. The reply shows which tools were used (🔎 lines), then the answer and sources.
@@ -94,7 +94,7 @@ Open the printed address, usually `http://127.0.0.1:7860`. Try:
 
 - "What is CRISPR?" → uses Wikipedia
 - "Find recent research papers on small language models" → uses arXiv
-- "Explain black holes and find a recent paper about them" → uses both
+- "Explain gravitational force and find a recent paper about it" → uses both
 - Then a follow-up: "Explain that more simply"
 
 ## Ideas to extend
