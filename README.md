@@ -1,26 +1,62 @@
-# Where is my order?
+# Research Assistant — a small AI agent with tools
 
-A small order-support app. A customer asks about an order; Python looks up the
-order record, and DeepSeek chooses an appropriate tone and next step using the
-shop's support rules. Python then builds the reply from the recorded facts.
+Ask a question like *"Explain black holes and find a recent paper about them"*.
+The AI decides which tools to use, Python runs them, and the AI writes a short
+answer with sources.
 
-Built with Python 3.13, [Gradio](https://www.gradio.app/), and the DeepSeek API.
+It is a small, readable example of an **AI agent**: a language model that can
+choose and use tools, not just write text.
 
-## Project structure
+| Tool | What it searches | Good for |
+|---|---|---|
+| `search_wikipedia` | [Wikipedia](https://www.wikipedia.org/) | Background, definitions, people, history |
+| `search_arxiv` | [arXiv](https://arxiv.org/) | Scientific research papers |
+
+Both tools are free public APIs with no sign-up. The only key you need is for
+[DeepSeek](https://platform.deepseek.com/), the AI model.
+
+## How the agent works
+
+```
+ your question
+      │
+      ▼
+ ┌─────────┐   "search_arxiv('black holes')"   ┌──────────────┐
+ │DeepSeek │ ────────────────────────────────▶ │ Python runs  │
+ │ (model) │ ◀──────────────────────────────── │  the tool    │
+ └─────────┘          search results           └──────────────┘
+      │   (repeats until the model has enough, up to 5 times)
+      ▼
+ answer + sources
+```
+
+1. Python sends the question **and a description of each tool** to DeepSeek.
+2. DeepSeek either asks for a tool (for example `search_arxiv("black holes")`)
+   or writes the final answer.
+3. If it asked for a tool, Python runs it and sends the results back. Go to step 2.
+4. The reply shows which tools were used (🔎 lines), then the answer and sources.
+
+The model never touches the internet itself: it only *asks*, and your Python code
+decides what actually runs.
+
+## Project files
 
 | File | Its job |
 |---|---|
-| `app.py` | The screen: messages, answers, and order details (Gradio) |
-| `agent.py` | The coordinator: connects the message, records, rules, and DeepSeek |
-| `tools.py` | The lookup: finds the order in the shop's records |
-| `policy.md` | The rules: what help the shop allows |
-| `requirements.txt` | Python dependencies |
-| `.env.example` | Template for the private `.env` settings file |
-| `tests/` | Tests with the external services simulated |
+| `tools.py` | The two tools, plus `TOOLS`: the descriptions the model reads |
+| `agent.py` | The agent loop: model → tool → model → answer |
+| `app.py` | The chat screen ([Gradio](https://www.gradio.app/)) |
+| `requirements.txt` | Packages to install |
+| `.env.example` | Template for your private `.env` key file |
+| `.github/agents/run-project.agent.md` | A VS Code Copilot agent that guides you through setup step by step |
+| `tests/` | Checks that run without a key or internet |
 
 ## Setup
 
-Requires Python 3.13.
+**Want a guide?** In VS Code Copilot Chat, pick the **run-project** agent from the
+agent menu and say hi. It asks for your OS and walks you through each step below.
+
+Requires Python 3.10+ (3.13 recommended).
 
 **macOS / Linux**
 
@@ -34,21 +70,20 @@ cp -n .env.example .env
 **Windows PowerShell**
 
 ```powershell
-py -3.13 -m venv .venv
+py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 if (!(Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
-Open `.env` and add your DeepSeek key:
+Open `.env` in the editor and add your key:
 
 ```dotenv
 DEEPSEEK_API_KEY=your_key_here
 ```
 
-You can create a key on the [DeepSeek platform](https://platform.deepseek.com/)
-under API keys; API access needs an available balance. Never commit `.env` or
-share the key. Restart the app after changing it.
+Create a key on the [DeepSeek platform](https://platform.deepseek.com/) under
+**API keys** (it needs an available balance). Never share or commit `.env`.
 
 ## Run
 
@@ -56,38 +91,27 @@ share the key. Restart the app after changing it.
 python app.py
 ```
 
-Open the printed local address, usually `http://localhost:7860`. To use another
-port, set `GRADIO_SERVER_PORT` (for example `GRADIO_SERVER_PORT=7861 python app.py`).
+Open the printed address, usually `http://127.0.0.1:7860`. Try:
 
-Try asking "Where is order 4cdeeb4be90a4bde94dc058f50a4d8c2?" and then "I need it
-for class. What should I do now?" You can also pick a labelled practice question
-below the chat, review the filled-in message, and press **Send**. Examples cover
-a parcel in transit, a delivered but missing parcel, and a canceled order.
-**New chat** clears the conversation.
+- "What is CRISPR?" → uses Wikipedia
+- "Find recent research papers on small language models" → uses arXiv
+- "Explain black holes and find a recent paper about them" → uses both
+- Then a follow-up: "Explain that more simply"
 
-## How it works
+## Ideas to extend
 
-Python finds the newest complete order number supplied by the customer and fetches
-that order. DeepSeek receives the last six exchanges, the selected record, and the
-shop's rules, and returns two short labels: tone and next step. Python validates
-those labels and builds an answer from the recorded facts. That is one AI request
-per successful order lookup, with a 150-token output limit and thinking disabled.
-The model is `deepseek-flash`; the HTTPS endpoint is fixed in `agent.py`. The
-request uses [DeepSeek's JSON output format](https://api-docs.deepseek.com/guides/json_mode/).
-
-The [Orders API](http://4.186.26.27:8787/ecommerce?dataset=orders_new) is fixed in
-`tools.py`. It contains historical records, not live tracking. The app cannot
-change orders, issue refunds, contact carriers, or create tickets. It uses prepared
-answer sentences, so it is a focused support example rather than a general-purpose
-chatbot. Chat history stays in the current Gradio browser session, not on disk.
+- **Add a third tool**, for example weather from [Open-Meteo](https://open-meteo.com/)
+  or books from [Open Library](https://openlibrary.org/developers/api): write the
+  function in `tools.py`, then add it to `TOOLS` and `FUNCTIONS`. No change to
+  `agent.py` is needed.
+- Change `SYSTEM_PROMPT` in `agent.py` to get a different style of answer.
+- Return more results per search, or show each tool's raw results in the chat.
 
 ## Tests
 
 ```sh
-python -m pip install pytest==9.1.1
+python -m pip install pytest
 python -m pytest -q
-python -m pip check
 ```
 
-Tests simulate the external services and need no key. A live request needs
-network access and a working DeepSeek key.
+The tests fake the web and DeepSeek, so they need no key or internet.

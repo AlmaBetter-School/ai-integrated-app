@@ -1,120 +1,42 @@
-"""The screen: conversation controls on the left, chat on the right."""
+"""The screen: a chat box that sends each question to the research agent."""
 import os
 from pathlib import Path
 
 import gradio as gr
 from dotenv import load_dotenv
 
-from agent import resolve
+from agent import research
 
-load_dotenv(Path(__file__).with_name(".env"))
-EMPTY_ORDER = "### Your order\nOrder details will appear here after a successful lookup."
-
-
-def reply(message, history):
-    """Ask the agent, remember the exchange, and update the order card."""
-    if not message.strip():
-        return "", history, history, gr.skip()
-    answer, order = resolve(message, history)
-    history = history + [
-        {"role": "user", "content": message},
-        {"role": "assistant", "content": answer},
-    ]
-    details = EMPTY_ORDER
-    if order:
-        details = (
-            f"### Your order\n**{order['status'].title()}**\n\n"
-            f"Order number\n`{order['order_id']}`\n\n"
-            f"**Estimated delivery**\n{order['expected_delivery'] or 'Not recorded'}\n\n"
-            f"**Delivered on**\n{order['delivered_on'] or 'Not recorded'}\n\n"
-            "*Historical records · not live tracking*"
-        )
-    return "", history, history, details
+load_dotenv(Path(__file__).with_name(".env"))  # Reads DEEPSEEK_API_KEY from .env.
 
 
-def reset_chat():
-    return "", [], [], EMPTY_ORDER
+def as_text(content):
+    """Gradio may store a message as plain text or as a list of parts."""
+    if isinstance(content, list):
+        return " ".join(part.get("text", "") for part in content if isinstance(part, dict))
+    return str(content)
 
 
-# Blocks arranges the screen. State keeps a separate conversation for each visitor.
-with gr.Blocks(title="Order Support", analytics_enabled=False) as demo:
-    history = gr.State([])
-    with gr.Row():
-        with gr.Column(scale=1, min_width=230, elem_id="sidebar"):
-            gr.Markdown("### AlmaBetter\nOrder support", elem_id="brand")
-            clear = gr.Button("＋ New chat", elem_id="new-chat")
-            order_card = gr.Markdown(EMPTY_ORDER)
-            gr.Markdown("---\nHistorical practice records.\n\n"
-                        "This app cannot change orders or issue refunds.", elem_id="sidebar-note")
-        with gr.Column(scale=4, min_width=300):
-            gr.Markdown("# Order support\nAsk about your parcel. We'll help you find the next step.")
-            chat = gr.Chatbot(
-                label="Conversation", show_label=False, height=430, layout="bubble",
-                placeholder="How can we help with your order?",
-                render_markdown=False, buttons=["copy"],
-            )
-            with gr.Row():
-                message = gr.Textbox(
-                    show_label=False, placeholder="Type your message…",
-                    lines=1, max_lines=3, scale=5,
-                )
-                send = gr.Button("Send", variant="primary", scale=1, min_width=85)
-            gr.Markdown("Choose a practice question below. It fills the message box; "
-                        "you can edit it, then press **Send**.")
-            gr.Examples(
-                examples=[
-                    ["Where is order 4cdeeb4be90a4bde94dc058f50a4d8c2?"],
-                    ["Order 751df94e324fbe8de6a5a186568f128a is marked delivered, "
-                     "but I can't find it. What should I do?"],
-                    ["My order 6d8a901414328a5ace8b17a2fb3f664a was canceled. "
-                     "What can I do next?"],
-                ],
-                example_labels=["Where is my parcel?", "Delivered, but missing", "My order was canceled"],
-                inputs=message, label="Start with a practice order",
-            )
-            gr.Examples(
-                examples=[["I need it for class. What should I do now?"],
-                          ["Who should I contact for help?"]],
-                example_labels=["I need it for class", "Who can help me?"],
-                inputs=message, label="After a reply, try a follow-up",
-            )
-            gr.Markdown("Follow-ups use the same order—no need to repeat its number. "
-                        "Choose **New chat** for a fresh conversation.")
+def chat(message, history):
+    turns = [{"role": turn["role"], "content": as_text(turn["content"])} for turn in history]
+    return research(message, turns)
 
-    # Enter and Send do the same job. Reset uses the same queue to avoid stale replies.
-    gr.on(triggers=[message.submit, send.click], fn=reply,
-          inputs=[message, history], outputs=[message, chat, history, order_card],
-          concurrency_id="conversation", api_name="reply")
-    gr.on(triggers=[clear.click, chat.clear], fn=reset_chat,
-          outputs=[message, chat, history, order_card],
-          concurrency_id="conversation", api_name="reset")
 
+demo = gr.ChatInterface(
+    fn=chat,
+    title="Research Assistant",
+    description="Ask a question. The agent searches Wikipedia and arXiv, "
+                "then answers with sources.",
+    examples=[
+        "What is CRISPR?",
+        "Find recent research papers on small language models",
+        "Explain black holes and find a recent paper about them",
+    ],
+    run_examples_on_click=False,  # Clicking an example only fills the box.
+)
 
 if __name__ == "__main__":
     demo.launch(
         server_name=os.getenv("GRADIO_SERVER_NAME", "127.0.0.1"),
         server_port=int(os.getenv("GRADIO_SERVER_PORT", "7860")),
-        theme=gr.themes.Base(primary_hue="red", neutral_hue="zinc",
-                             font=["Arial", "sans-serif"]),
-        css="""
-            .gradio-container {max-width: 1180px !important;}
-            #sidebar {background: #f5f5f5; border-radius: 12px; padding: 18px; gap: 24px;}
-            #sidebar .prose, #sidebar .prose * {color: #525252; font-size: 13px;}
-            #sidebar h3 {font-size: 14px !important; color: #171717 !important;}
-            #sidebar code {background: #eaeaea; overflow-wrap: anywhere;}
-            #sidebar hr {border-color: #e5e5e5;}
-            #brand h3 {font-size: 18px !important; letter-spacing: -.03em;}
-            #new-chat {background: transparent; border: 0; box-shadow: none;
-                       color: #171717; justify-content: flex-start; text-align: left; padding: 10px 12px; border-radius: 8px;}
-            #new-chat:hover {background: #e8e8e8;}
-            #sidebar-note {margin-top: auto;}
-            .dark #sidebar {background: #202020;}
-            .dark #sidebar .prose, .dark #sidebar .prose * {color: #bcbcbc;}
-            .dark #sidebar h3, .dark #new-chat {color: #f5f5f5 !important;}
-            .dark #sidebar code, .dark #new-chat:hover {background: #303030;}
-            @media (min-width: 768px) {#sidebar {min-height: 660px;}}
-            button.primary {background: #dc2626 !important; color: white !important;}
-            button.primary:hover {background: #b91c1c !important;}
-        """,
-        footer_links=[], share=False,
     )

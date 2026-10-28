@@ -1,43 +1,77 @@
-"""Find one order in the shop's historical records."""
-from datetime import datetime
+"""The agent's tools: two free public APIs it can search."""
+import json
+import xml.etree.ElementTree as ET
 
 import httpx
 
-ORDERS_API_URL = "http://4.186.26.27:8787/ecommerce?dataset=orders_new"
-ORDER_STATUSES = ("approved", "canceled", "created", "delivered",
-                  "invoiced", "processing", "shipped", "unavailable")
+WIKIPEDIA_URL = "https://en.wikipedia.org/w/api.php"
+ARXIV_URL = "https://export.arxiv.org/api/query"
+# Wikipedia blocks requests that don't say who is calling and where to find the project.
+HEADERS = {"User-Agent": "research-assistant-learning-project/1.0 "
+                         "(https://github.com/AlmaBetter-School/ai-integrated-app)"}
+ATOM = "{http://www.w3.org/2005/Atom}"  # arXiv answers in Atom XML.
 
 
-def readable_date(value):
-    """Turn a stored timestamp into a date; missing dates stay missing."""
-    if value is None:
-        return None
-    return datetime.fromisoformat(value).date().isoformat()
+def shorten(text, limit=600):
+    text = " ".join(text.split())
+    return text if len(text) <= limit else text[:limit] + "…"
 
 
-def get_order_status(order_id):
-    response = httpx.get(ORDERS_API_URL, timeout=30.0)
+def search_wikipedia(query):
+    """Tool 1: background facts from Wikipedia."""
+    response = httpx.get(WIKIPEDIA_URL, headers=HEADERS, timeout=20.0, params={
+        "action": "query", "format": "json", "generator": "search", "gsrsearch": query,
+        "gsrlimit": 3, "prop": "extracts|info", "exintro": 1, "explaintext": 1, "inprop": "url",
+    })
     response.raise_for_status()
-    rows = response.json()
-    if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
-        raise ValueError("Expected a list of order records")
+    pages = response.json().get("query", {}).get("pages", {}).values()
+    pages = sorted(pages, key=lambda page: page.get("index", 0))  # Best match first.
+    return [{"title": page["title"], "summary": shorten(page.get("extract", "")),
+             "url": page["fullurl"]} for page in pages]
 
-    matches = []
-    for row in rows:
-        if row.get("order_id") == order_id:
-            matches.append(row)
-    if not matches:
-        return None
-    if len(matches) != 1:
-        raise ValueError("More than one record has this order number")
 
-    row = matches[0]
-    if row["order_status"] not in ORDER_STATUSES:
-        raise ValueError("Unknown order status")
-    # Return only the details needed for support, not the full customer record.
-    return {
-        "order_id": row["order_id"],
-        "status": row["order_status"],
-        "expected_delivery": readable_date(row["order_estimated_delivery_date"]),
-        "delivered_on": readable_date(row["order_delivered_customer_date"]),
-    }
+def search_arxiv(query):
+    """Tool 2: scientific papers from arXiv."""
+    response = httpx.get(ARXIV_URL, headers=HEADERS, timeout=20.0, params={
+        "search_query": f"all:{query}", "max_results": 3, "sortBy": "relevance",
+    })
+    response.raise_for_status()
+    papers = []
+    for entry in ET.fromstring(response.text).findall(f"{ATOM}entry"):
+        papers.append({
+            "title": shorten(entry.findtext(f"{ATOM}title", "")),
+            "authors": [a.findtext(f"{ATOM}name", "") for a in entry.findall(f"{ATOM}author")][:3],
+            "published": entry.findtext(f"{ATOM}published", "")[:10],
+            "summary": shorten(entry.findtext(f"{ATOM}summary", "")),
+            "url": entry.findtext(f"{ATOM}id", ""),
+        })
+    return papers
+
+
+# The model reads these descriptions to decide which tool fits the question.
+TOOLS = [
+    {"type": "function", "function": {
+        "name": "search_wikipedia",
+        "description": "Search Wikipedia for background facts, definitions, people, places and history.",
+        "parameters": {"type": "object", "required": ["query"], "properties": {
+            "query": {"type": "string", "description": "A short search phrase"}}},
+    }},
+    {"type": "function", "function": {
+        "name": "search_arxiv",
+        "description": "Search arXiv for scientific research papers, including recent studies.",
+        "parameters": {"type": "object", "required": ["query"], "properties": {
+            "query": {"type": "string", "description": "A short search phrase"}}},
+    }},
+]
+FUNCTIONS = {"search_wikipedia": search_wikipedia, "search_arxiv": search_arxiv}
+
+
+def run_tool(name, arguments):
+    """Run the tool the model asked for and return the result as text for the model."""
+    if name not in FUNCTIONS:
+        return f"Error: there is no tool called {name}."
+    try:
+        results = FUNCTIONS[name](arguments["query"])
+    except (httpx.HTTPError, ET.ParseError, KeyError, TypeError) as error:
+        return f"Error: {name} failed ({type(error).__name__}). Try the other tool or answer without it."
+    return json.dumps(results) if results else "No results found."
