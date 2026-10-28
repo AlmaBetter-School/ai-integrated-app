@@ -49,7 +49,6 @@ decides what actually runs.
 | `requirements.txt` | Packages to install |
 | `.env.example` | Template for your private `.env` key file |
 | `.github/agents/run-project.agent.md` | A VS Code Copilot agent that guides you through setup step by step |
-| `tests/` | Checks that run without a key or internet |
 
 ## Setup
 
@@ -106,12 +105,3 @@ Open the printed address, usually `http://127.0.0.1:7860`. Try:
   `agent.py` is needed.
 - Change `SYSTEM_PROMPT` in `agent.py` to get a different style of answer.
 - Return more results per search, or show each tool's raw results in the chat.
-
-## Tests
-
-```sh
-python -m pip install pytest
-python -m pytest -q
-```
-
-The tests fake the web and DeepSeek, so they need no key or internet.
