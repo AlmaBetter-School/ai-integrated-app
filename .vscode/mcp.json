@@ -1,9 +1,0 @@
-{
-  "$schema": "https://aka.ms/vscode-mcp-schema.json",
-  "servers": {
-    "almabetter-openlabs-mcp": {
-      "type": "http",
-      "url": "https://openlabs.almabetter.com/workshop-mcp"
-    }
-  }
-}
