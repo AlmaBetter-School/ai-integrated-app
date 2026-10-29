@@ -45,7 +45,7 @@ decides what actually runs.
 
 | File | Its job |
 |---|---|
-| `app_instructions.md` | The agent's settings (`tools`, `max_steps`, `memory`, `max_tokens`), then its goal, loop, memory, answer format and guardrails |
+| `app_instructions.md` | The agent's settings (`tools`, `max_steps`, `memory`, `max_tokens`, `max_total_tokens`), then its goal, loop, memory, answer format and guardrails |
 | `tools.py` | The two tools, plus `TOOLS`: the descriptions the model reads |
 | `agent.py` | The agent loop: model → tool → model → answer |
 | `app.py` | The chat screen ([Gradio](https://www.gradio.app/)) |
@@ -61,14 +61,23 @@ decides what actually runs.
 
 | Setting | What it controls | Default | Allowed range |
 |---|---|---|---|
-| `tools` | Which tools from `tools.py` the model may use | both | any listed in `TOOLS` |
+| `tools` | Which tools from `tools.py` the model may use. `[]` means none: a plain chatbot | both | names in `TOOLS` |
 | `max_steps` | Rounds of the loop before the agent gives up | 5 | 1–10 |
 | `memory` | Past exchanges re-sent with each question | 6 | 0–10 |
-| `max_tokens` | Longest reply the model may write in one round (a token is about ¾ of a word); limits cost | 1000 | 300–2000 |
+| `max_tokens` | Longest reply the model may write in one round (a token is about ¾ of a word) | 1000 | 300–2000 |
+| `max_total_tokens` | Token budget for one whole question, all rounds together | 20000 | 5000–50000 |
+
+Write one setting per line, and the tools list on a single line in `[ ]`.
 
 The ranges are hard limits set in `LIMITS` in `agent.py`. The file can tune a value,
-but never past them, so one edit can't make the loop endless, the replies huge or the bill grow. A
-missing or invalid value falls back to the default.
+but never past them, so one edit can't make the loop endless, the replies huge or the
+bill grow. A missing or invalid number falls back to the default. A mistake in the
+tools line (a misspelt name, or a list split over several lines) stops the agent with
+a message saying exactly what to fix, instead of quietly running without tools.
+
+Every answer ends with what it cost, for example `📊 3 rounds · 6,837 tokens`. If a
+reply hits `max_tokens`, a ⚠️ note says it was cut short. These status lines, and the
+🔎 search lines, are removed before past answers are re-sent as memory.
 
 **Rules** (everything below the header) are sent to the model first, every time,
 with one section for each part of an agent: Goal, Tools, How you work (the loop),

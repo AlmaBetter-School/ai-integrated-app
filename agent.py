@@ -9,7 +9,7 @@ from tools import TOOLS, run_tool
 
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 # The agent's settings and rules: a header between --- lines (name, tools, max_steps,
-# memory), then the Markdown rules the model reads first, every time.
+# memory, max_tokens, max_total_tokens), then the Markdown rules the model reads first.
 INSTRUCTIONS_FILE = Path(__file__).with_name("app_instructions.md")
 # (lowest, highest, default) for each setting. The file can tune a value, but never
 # past these limits, so an edit can't make the loop endless or the bill huge.
@@ -17,18 +17,23 @@ LIMITS = {
     "max_steps": (1, 10, 5),  # Rounds of the loop before the agent gives up.
     "memory": (0, 10, 6),     # Past exchanges re-sent with each question.
     "max_tokens": (300, 2000, 1000),  # Longest reply per round. Below 300, answers get cut off.
+    "max_total_tokens": (5000, 50000, 20000),  # Budget for one whole question, all rounds.
 }
+# Lines the app adds for the reader. They're removed before past answers are re-sent
+# as memory, so the model only sees real answers and no tokens are wasted.
+STATUS_MARKS = ("🔎", "🧠", "📊", "⚠️")
 
 
 def load_instructions():
     """Read app_instructions.md fresh for every question, so a saved edit applies without a restart.
 
-    Returns the rules, the tools the header allows, and the settings, kept within LIMITS.
+    Returns the rules, the tools the header allows, the settings (kept within LIMITS),
+    and a list of problems found in the header, in plain words.
     """
     try:
         text = INSTRUCTIONS_FILE.read_text(encoding="utf-8")
     except OSError:
-        return "", [], {}
+        return "", [], {}, []
     header, rules = "", text
     if text.startswith("---"):
         header, _, rules = text[3:].partition("\n---")
@@ -37,8 +42,19 @@ def load_instructions():
         key, _, value = line.partition(":")
         values[key.strip()] = value.strip()
 
-    allowed = [name.strip(" '\"") for name in values.get("tools", "").strip("[]").split(",")]
-    tools = [tool for tool in TOOLS if tool["function"]["name"] in allowed]
+    # Tools: one line, like  tools: [search_wikipedia, search_arxiv]. "tools: []" means none.
+    problems = []
+    listed = values.get("tools")
+    if listed is None or not listed.startswith("["):
+        problems.append("Write the tools on one line, like: tools: [search_wikipedia, search_arxiv]")
+        listed = "[]"
+    names = [name.strip(" '\"") for name in listed.strip("[]").split(",") if name.strip(" '\"")]
+    known = [tool["function"]["name"] for tool in TOOLS]
+    for name in names:
+        if name not in known:
+            problems.append(f"'{name}' isn't a tool in tools.py. Known tools: {', '.join(known)}")
+    tools = [tool for tool in TOOLS if tool["function"]["name"] in names]
+
     settings = {}
     for key, (lowest, highest, default) in LIMITS.items():
         try:
@@ -46,11 +62,21 @@ def load_instructions():
         except ValueError:  # Not a whole number, so use the safe default.
             number = default
         settings[key] = max(lowest, min(number, highest))
-    return rules.strip(), tools, settings
+    return rules.strip(), tools, settings, problems
+
+
+def without_status(text):
+    """Remove the app's status lines (searches, token count, notes) from a past answer."""
+    lines = [line for line in str(text).splitlines() if not line.startswith(STATUS_MARKS)]
+    return "\n".join(lines).strip()
 
 
 def ask_model(messages, tools, max_tokens, api_key):
-    """Send the conversation and the allowed tools to DeepSeek; return its message."""
+    """Send the conversation and the allowed tools to DeepSeek.
+
+    Returns the model's message, why it stopped ("stop", "tool_calls" or "length"),
+    and how many tokens this call used.
+    """
     request = {
         "model": "deepseek-flash",
         "messages": messages,
@@ -66,7 +92,9 @@ def ask_model(messages, tools, max_tokens, api_key):
         timeout=60.0,
     )
     response.raise_for_status()
-    return response.json()["choices"][0]["message"]
+    data = response.json()
+    choice = data["choices"][0]
+    return choice["message"], choice.get("finish_reason"), data.get("usage", {}).get("total_tokens", 0)
 
 
 def research(question, history=None):
@@ -81,31 +109,46 @@ def research(question, history=None):
     api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
     if not api_key:
         return "Add DEEPSEEK_API_KEY to your local .env file, then restart the app."
-    rules, tools, settings = load_instructions()
+    rules, tools, settings, problems = load_instructions()
     if not rules:
         return "Add your agent's rules to app_instructions.md (next to app.py), save it, then ask again."
+    if problems:  # Don't carry on with a broken setup: say exactly what to fix.
+        return "Fix the header in app_instructions.md, then ask again:\n- " + "\n- ".join(problems)
     allowed = [tool["function"]["name"] for tool in tools]
 
-    # ① Prepare: rules first, then the recent chat (memory exchanges, two messages each),
-    # then the question.
+    # ① Prepare: rules first, then the recent chat (memory exchanges, two messages each,
+    # with our status lines removed), then the question.
     remembered = 2 * settings["memory"]
     recent = (history or [])[-remembered:] if remembered else []
+    recent = [{"role": turn["role"], "content": without_status(turn["content"])} for turn in recent]
     messages = [{"role": "system", "content": rules}, *recent,
                 {"role": "user", "content": question}]
     tools_used = []  # One line per search, shown above the answer.
+    tokens_spent = 0  # All rounds together, checked against max_total_tokens.
 
     try:
         for round_number in range(1, settings["max_steps"] + 1):
             # ② Think: the model reads the whole conversation and the tools it's allowed.
-            reply = ask_model(messages, tools, settings["max_tokens"], api_key)
+            reply, stop_reason, tokens = ask_model(messages, tools, settings["max_tokens"], api_key)
+            tokens_spent += tokens
             messages.append(reply)
 
             # The model's decision: did it order any tools?
             orders = reply.get("tool_calls")
             if not orders:
-                # ④ Answer: no orders, so it has finished. Show its searches, then the answer.
+                # ④ Answer: no orders, so it has finished. Show its searches, then the
+                # answer, a note if max_tokens cut it short, and what it cost.
                 searches = "\n".join(tools_used) or "🧠 Answered without searching"
-                return f"{searches}\n\n{reply['content']}"
+                answer = f"{searches}\n\n{reply['content']}"
+                if stop_reason == "length":
+                    answer += "\n\n⚠️ This answer was cut short. Raise max_tokens in app_instructions.md for longer answers."
+                plural = "s" if round_number > 1 else ""
+                return f"{answer}\n\n📊 {round_number} round{plural} · {tokens_spent:,} tokens"
+
+            # Guardrail: stop before searching again if this question used its whole budget.
+            if tokens_spent >= settings["max_total_tokens"]:
+                return (f"I stopped after {tokens_spent:,} tokens, this question's budget "
+                        "(max_total_tokens in app_instructions.md). Try a more specific question.")
 
             # ③ Act & observe: run every tool it ordered and add each result to the
             # conversation. The for loop then starts the next round, back at ②.

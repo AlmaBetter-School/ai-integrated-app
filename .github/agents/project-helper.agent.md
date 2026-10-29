@@ -11,7 +11,7 @@ change short and easy to read.
 
 ## Project map
 
-- `app_instructions.md`: header settings (`tools`, `max_steps`, `memory`, `max_tokens`) plus the rules
+- `app_instructions.md`: header settings (`tools`, `max_steps`, `memory`, `max_tokens`, `max_total_tokens`) plus the rules
   sent to the model as its system prompt.
 - `agent.py`: `load_instructions()` reads that file; `research()` runs the agent loop.
   `LIMITS` sets the hard ceiling for each setting.
@@ -35,11 +35,11 @@ change short and easy to read.
 
 ```sh
 python -m py_compile agent.py tools.py app.py
-python -c "import agent; r, t, s = agent.load_instructions(); print([x['function']['name'] for x in t], s)"
+python -c "import agent; r, t, s, p = agent.load_instructions(); print([x['function']['name'] for x in t], s, p)"
 ```
 
 Both must succeed. The second must print the tools and settings from
-`app_instructions.md`. If either fails, fix it before doing anything else.
+`app_instructions.md`, and an empty problems list `[]`. If either fails, fix it before doing anything else.
 
 ## To commit and push (only when the user asks)
 

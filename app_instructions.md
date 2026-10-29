@@ -5,6 +5,7 @@ tools: [search_wikipedia, search_arxiv]
 max_steps: 5
 memory: 6
 max_tokens: 1000
+max_total_tokens: 20000
 ---
 
 # Research Assistant
