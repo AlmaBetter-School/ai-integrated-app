@@ -30,7 +30,8 @@ Both tools are free public APIs with no sign-up. The only key you need is for
  answer + sources
 ```
 
-1. Python sends the question **and a description of each tool** to DeepSeek.
+1. Python reads `research-assistant.agent.md`, then sends its rules, the question
+   **and a description of each tool the file allows** to DeepSeek.
 2. DeepSeek either asks for a tool (for example `search_arxiv("gravitational force")`)
    or writes the final answer.
 3. If it asked for a tool, Python runs it and sends the results back. Go to step 2.
@@ -44,18 +45,31 @@ decides what actually runs.
 
 | File | Its job |
 |---|---|
-| `instructions.md` | The agent's rules in Markdown (Role, Workflow, Boundaries), like Lesson 2's agent file |
+| `research-assistant.agent.md` | The agent file: a header with its name and allowed `tools`, then its rules (Role, Workflow, Boundaries) |
 | `tools.py` | The two tools, plus `TOOLS`: the descriptions the model reads |
 | `agent.py` | The agent loop: model → tool → model → answer |
 | `app.py` | The chat screen ([Gradio](https://www.gradio.app/)) |
 | `requirements.txt` | Packages to install |
 | `.env.example` | Template for your private `.env` key file |
-| `.github/agents/run-project.agent.md` | A VS Code Copilot agent that guides you through setup step by step |
+
+## The agent file
+
+`research-assistant.agent.md` uses the same format as the `study-buddy.agent.md`
+you wrote in Lesson 2. The difference is who reads it:
+
+| File | Read by | Its `tools:` line controls |
+|---|---|---|
+| `study-buddy.agent.md` (Lesson 2) | GitHub Copilot | What Copilot may do: read and edit files |
+| `research-assistant.agent.md` (here) | Our `agent.py` | Which Python tools from `tools.py` the model may order |
+
+It sits next to `app.py`, not in `.github/agents/`, so Copilot doesn't list it as a
+chat agent: Copilot can't run our search tools and would answer from memory.
+
+Edit the file, save, and ask again. The agent re-reads it for every question, so
+no restart is needed. Try deleting `search_arxiv` from the `tools:` line, then ask
+for a recent paper: the agent should say it can't search papers.
 
 ## Setup
-
-**Want a guide?** In VS Code Copilot Chat, pick the **run-project** agent from the
-agent menu and say hi. It asks for your OS and walks you through each step below.
 
 Requires Python 3.10+ (3.13 recommended).
 
@@ -103,8 +117,7 @@ Open the printed address, usually `http://127.0.0.1:7860`. Try:
 
 - **Add a third tool**, for example weather from [Open-Meteo](https://open-meteo.com/)
   or books from [Open Library](https://openlibrary.org/developers/api): write the
-  function in `tools.py`, then add it to `TOOLS` and `FUNCTIONS`. No change to
-  `agent.py` is needed.
-- Edit `instructions.md` to get a different style of answer. Save it and ask again:
-  the agent re-reads it for every question, so no restart is needed.
+  function in `tools.py`, add it to `TOOLS` and `FUNCTIONS`, then add its name to
+  the `tools:` line in `research-assistant.agent.md`. No change to `agent.py` is needed.
+- Edit the rules in `research-assistant.agent.md` to get a different style of answer.
 - Return more results per search, or show each tool's raw results in the chat.

@@ -9,29 +9,45 @@ from tools import TOOLS, run_tool
 
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 MAX_STEPS = 5  # Stop after this many model calls, so the agent can't loop forever.
-# The agent's rules live in Markdown (Role, Workflow, Boundaries), like Lesson 2's agent file.
-INSTRUCTIONS = Path(__file__).with_name("instructions.md")
+# The agent file, in the same format as Lesson 2's study-buddy.agent.md:
+# a header between --- lines (name, description, tools), then the rules in Markdown.
+AGENT_FILE = Path(__file__).with_name("research-assistant.agent.md")
 
 
-def load_instructions():
-    """Read the rules fresh for every question, so a saved edit applies without a restart."""
+def load_agent():
+    """Read the agent file fresh for every question, so a saved edit applies without a restart.
+
+    Returns the rules (everything after the header) and the tools its header allows.
+    """
     try:
-        return INSTRUCTIONS.read_text(encoding="utf-8").strip()
+        text = AGENT_FILE.read_text(encoding="utf-8")
     except OSError:
-        return ""
+        return "", []
+    header, rules = "", text
+    if text.startswith("---"):
+        header, _, rules = text[3:].partition("\n---")
+    allowed = []
+    for line in header.splitlines():
+        if line.startswith("tools:"):
+            allowed = [name.strip(" '\"") for name in line[len("tools:"):].strip(" []").split(",")]
+    tools = [tool for tool in TOOLS if tool["function"]["name"] in allowed]
+    return rules.strip(), tools
 
-def ask_model(messages, api_key):
-    """Send the conversation and the tool list to DeepSeek; return its message."""
+
+def ask_model(messages, tools, api_key):
+    """Send the conversation and the allowed tools to DeepSeek; return its message."""
+    request = {
+        "model": "deepseek-flash",
+        "messages": messages,
+        "thinking": {"type": "disabled"},
+        "max_tokens": 1000,
+    }
+    if tools:  # With no tools listed, the model can only answer from memory.
+        request["tools"] = tools
     response = httpx.post(
         DEEPSEEK_URL,
         headers={"Authorization": f"Bearer {api_key}"},
-        json={
-            "model": "deepseek-flash",
-            "messages": messages,
-            "tools": TOOLS,
-            "thinking": {"type": "disabled"},
-            "max_tokens": 1000,
-        },
+        json=request,
         timeout=60.0,
     )
     response.raise_for_status()
@@ -50,20 +66,21 @@ def research(question, history=None):
     api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
     if not api_key:
         return "Add DEEPSEEK_API_KEY to your local .env file, then restart the app."
-    instructions = load_instructions()
-    if not instructions:
-        return "Add your agent's rules to instructions.md (next to app.py), save it, then ask again."
+    rules, tools = load_agent()
+    if not rules:
+        return "Add your agent's rules to research-assistant.agent.md (next to app.py), save it, then ask again."
+    allowed = [tool["function"]["name"] for tool in tools]
 
     # ① Prepare: rules first, then the recent chat (last six exchanges), then the question.
     recent = (history or [])[-12:]
-    messages = [{"role": "system", "content": instructions}, *recent,
+    messages = [{"role": "system", "content": rules}, *recent,
                 {"role": "user", "content": question}]
     tools_used = []  # One line per search, shown above the answer.
 
     try:
         for round_number in range(1, MAX_STEPS + 1):
-            # ② Think: the model reads the whole conversation and the tool menu.
-            reply = ask_model(messages, api_key)
+            # ② Think: the model reads the whole conversation and the tools it's allowed.
+            reply = ask_model(messages, tools, api_key)
             messages.append(reply)
 
             # The model's decision: did it order any tools?
@@ -78,9 +95,12 @@ def research(question, history=None):
             for order in orders:
                 name = order["function"]["name"]
                 arguments = json.loads(order["function"]["arguments"])
-                tools_used.append(f"🔎 Round {round_number}: {name}(\"{arguments.get('query', '')}\")")
-                messages.append({"role": "tool", "tool_call_id": order["id"],
-                                 "content": run_tool(name, arguments)})
+                if name in allowed:  # Guardrail: only tools listed in the agent file can run.
+                    tools_used.append(f"🔎 Round {round_number}: {name}(\"{arguments.get('query', '')}\")")
+                    result = run_tool(name, arguments)
+                else:
+                    result = f"Error: {name} is not in this agent's tools list."
+                messages.append({"role": "tool", "tool_call_id": order["id"], "content": result})
     except httpx.HTTPStatusError as error:
         if error.response.status_code == 401:
             return "DeepSeek could not accept the key. Check your local .env and restart."
