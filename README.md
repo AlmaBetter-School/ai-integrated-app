@@ -34,7 +34,8 @@ Both tools are free public APIs with no sign-up. The only key you need is for
 2. DeepSeek either asks for a tool (for example `search_arxiv("gravitational force")`)
    or writes the final answer.
 3. If it asked for a tool, Python runs it and sends the results back. Go to step 2.
-4. The reply shows which tools were used (🔎 lines), then the answer and sources.
+4. The reply shows which tools were used in each round of the loop
+   (🔎 Round 1, Round 2…), then the answer and sources.
 
 The model never touches the internet itself: it only *asks*, and your Python code
 decides what actually runs.

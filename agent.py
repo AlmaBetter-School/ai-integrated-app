@@ -37,8 +37,16 @@ def ask_model(messages, api_key):
     response.raise_for_status()
     return response.json()["choices"][0]["message"]
 
+
 def research(question, history=None):
-    """Answer a question, showing which tools the agent used along the way."""
+    """Answer a question with the agent loop:
+
+    ① Prepare   rules + recent chat + the question
+    ② Think     the model reads everything and decides: order tools, or answer?
+    ③ Act       Python runs each tool it ordered and adds the results,
+                then goes back to ② (at most MAX_STEPS rounds)
+    ④ Answer    no orders this time, so the model's reply is the answer
+    """
     api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
     if not api_key:
         return "Add DEEPSEEK_API_KEY to your local .env file, then restart the app."
@@ -46,28 +54,32 @@ def research(question, history=None):
     if not instructions:
         return "Add your agent's rules to instructions.md (next to app.py), save it, then ask again."
 
-    # Step 1: give the model its instructions, the recent chat, and the new question.
-    recent = (history or [])[-12:]  # The last six exchanges.
+    # ① Prepare: rules first, then the recent chat (last six exchanges), then the question.
+    recent = (history or [])[-12:]
     messages = [{"role": "system", "content": instructions}, *recent,
                 {"role": "user", "content": question}]
-    steps = []
+    tools_used = []  # One line per search, shown above the answer.
 
     try:
-        for _ in range(MAX_STEPS):
-            # Step 2: the model either asks for tools or writes the final answer.
+        for round_number in range(1, MAX_STEPS + 1):
+            # ② Think: the model reads the whole conversation and the tool menu.
             reply = ask_model(messages, api_key)
             messages.append(reply)
-            if not reply.get("tool_calls"):
-                # Step 4: no more tools needed, so show the steps and the answer.
-                used = "\n".join(steps) or "🧠 Answered without searching"
-                return f"{used}\n\n{reply['content']}"
 
-            # Step 3: run each requested tool and give the results back to the model.
-            for call in reply["tool_calls"]:
-                name = call["function"]["name"]
-                arguments = json.loads(call["function"]["arguments"])
-                steps.append(f"🔎 {name}(\"{arguments.get('query', '')}\")")
-                messages.append({"role": "tool", "tool_call_id": call["id"],
+            # The model's decision: did it order any tools?
+            orders = reply.get("tool_calls")
+            if not orders:
+                # ④ Answer: no orders, so it has finished. Show its searches, then the answer.
+                searches = "\n".join(tools_used) or "🧠 Answered without searching"
+                return f"{searches}\n\n{reply['content']}"
+
+            # ③ Act & observe: run every tool it ordered and add each result to the
+            # conversation. The for loop then starts the next round, back at ②.
+            for order in orders:
+                name = order["function"]["name"]
+                arguments = json.loads(order["function"]["arguments"])
+                tools_used.append(f"🔎 Round {round_number}: {name}(\"{arguments.get('query', '')}\")")
+                messages.append({"role": "tool", "tool_call_id": order["id"],
                                  "content": run_tool(name, arguments)})
     except httpx.HTTPStatusError as error:
         if error.response.status_code == 401:
@@ -78,6 +90,7 @@ def research(question, history=None):
     except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError):
         return "I could not finish this research. Please try again."
 
+    # Guardrail: every round was used and the model still wanted more searches.
     return "I searched several times but couldn't finish. Try a more specific question."
 
 
