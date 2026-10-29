@@ -2,10 +2,6 @@
 name: Research Assistant
 description: Finds real sources on Wikipedia and arXiv and explains them simply.
 tools: [search_wikipedia, search_arxiv]
-max_steps: 5
-memory: 6
-max_tokens: 1000
-max_total_tokens: 20000
 ---
 
 # Research Assistant

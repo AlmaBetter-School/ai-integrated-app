@@ -11,10 +11,11 @@ change short and easy to read.
 
 ## Project map
 
-- `app_instructions.md`: header settings (`tools`, `max_steps`, `memory`, `max_tokens`, `max_total_tokens`) plus the rules
-  sent to the model as its system prompt.
-- `agent.py`: `load_instructions()` reads that file; `research()` runs the agent loop.
-  `LIMITS` sets the hard ceiling for each setting.
+- `app_instructions.md`: header with `name`, `description` and `tools` (allowed tools),
+  then the rules sent to the model as its system prompt.
+- `config.json`: `model`, `max_steps`, `memory`, `max_tokens`, `max_total_tokens`.
+- `agent.py`: `load_instructions()` and `load_settings()` read those two files;
+  `research()` runs the agent loop. `LIMITS` sets the hard ceiling for each number.
 - `tools.py`: the search functions, `TOOLS` (descriptions), `FUNCTIONS`, `run_tool()`.
 - `app.py`: the Gradio chat page.
 - `README.md`: user-facing docs.
@@ -22,8 +23,8 @@ change short and easy to read.
 ## Rules
 
 1. Read the files involved before changing anything.
-2. Keep hard limits in `LIMITS` in `agent.py`. Settings in `app_instructions.md` may
-   only tune values inside those limits.
+2. Keep hard limits in `LIMITS` in `agent.py`. `config.json` may only tune values
+   inside those limits. Keep settings out of `app_instructions.md`.
 3. Tools must stay read-only. Never add a tool that sends, writes, buys or deletes.
 4. To add a tool: write the function in `tools.py`, add it to `TOOLS` and
    `FUNCTIONS`, then add its name to `tools:` in `app_instructions.md`.
@@ -35,11 +36,12 @@ change short and easy to read.
 
 ```sh
 python -m py_compile agent.py tools.py app.py
-python -c "import agent; r, t, s, p = agent.load_instructions(); print([x['function']['name'] for x in t], s, p)"
+python -c "import agent; r, t, p = agent.load_instructions(); s, q = agent.load_settings(); print([x['function']['name'] for x in t], s, p + q)"
 ```
 
-Both must succeed. The second must print the tools and settings from
-`app_instructions.md`, and an empty problems list `[]`. If either fails, fix it before doing anything else.
+Both must succeed. The second must print the tools from `app_instructions.md`, the
+settings from `config.json`, and an empty problems list `[]`. If either fails, fix it
+before doing anything else.
 
 ## To commit and push (only when the user asks)
 

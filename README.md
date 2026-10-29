@@ -45,7 +45,8 @@ decides what actually runs.
 
 | File | Its job |
 |---|---|
-| `app_instructions.md` | The agent's settings (`tools`, `max_steps`, `memory`, `max_tokens`, `max_total_tokens`), then its goal, loop, memory, answer format and guardrails |
+| `app_instructions.md` | What the agent is: its allowed `tools`, then its goal, loop, memory, answer format and guardrails |
+| `config.json` | How much it may do: the model, loop rounds, memory and token limits |
 | `tools.py` | The two tools, plus `TOOLS`: the descriptions the model reads |
 | `agent.py` | The agent loop: model → tool → model → answer |
 | `app.py` | The chat screen ([Gradio](https://www.gradio.app/)) |
@@ -53,43 +54,61 @@ decides what actually runs.
 | `.env.example` | Template for your private `.env` key file |
 | `.github/agents/project-helper.agent.md` | A VS Code Copilot agent that runs, tests, fixes and extends this project, and commits and pushes with your approval |
 
-## The agent's instructions
+## The agent's instructions and settings
 
-`app_instructions.md` holds everything that shapes the agent, in one place.
+Two files shape the agent. `agent.py` re-reads both for every question, so a saved
+change applies without a restart.
 
-**Settings** (the header between the `---` lines):
+### `app_instructions.md`: what the agent is
 
-| Setting | What it controls | Default | Allowed range |
-|---|---|---|---|
-| `tools` | Which tools from `tools.py` the model may use. `[]` means none: a plain chatbot | both | names in `TOOLS` |
-| `max_steps` | Rounds of the loop before the agent gives up | 5 | 1–10 |
-| `memory` | Past exchanges re-sent with each question | 6 | 0–10 |
-| `max_tokens` | Longest reply the model may write in one round (a token is about ¾ of a word) | 1000 | 300–2000 |
-| `max_total_tokens` | Token budget for one whole question, all rounds together | 20000 | 5000–50000 |
+The header between the `---` lines names the agent and lists its `tools`: which
+tools from `tools.py` the model may use. Write the list on one line, like
+`tools: [search_wikipedia, search_arxiv]`. `tools: []` means none, which turns it
+into a plain chatbot. A misspelt name or a list split over several lines stops the
+agent with a message saying exactly what to fix, instead of quietly running without
+tools.
 
-Write one setting per line, and the tools list on a single line in `[ ]`.
-
-The ranges are hard limits set in `LIMITS` in `agent.py`. The file can tune a value,
-but never past them, so one edit can't make the loop endless, the replies huge or the
-bill grow. A missing or invalid number falls back to the default. A mistake in the
-tools line (a misspelt name, or a list split over several lines) stops the agent with
-a message saying exactly what to fix, instead of quietly running without tools.
-
-Every answer ends with what it cost, for example `📊 3 rounds · 6,837 tokens`. If a
-reply hits `max_tokens`, a ⚠️ note says it was cut short. These status lines, and the
-🔎 search lines, are removed before past answers are re-sent as memory.
-
-**Rules** (everything below the header) are sent to the model first, every time,
-with one section for each part of an agent: Goal, Tools, How you work (the loop),
-Memory, Answer format and Guardrails.
+Everything below the header is sent to the model first, every time, with one section
+for each part of an agent: Goal, Tools, How you work (the loop), Memory, Answer
+format and Guardrails.
 
 It uses the same header format as the `study-buddy.agent.md` you wrote in Lesson 2,
 but our `agent.py` reads it, not Copilot. That's why it sits next to `app.py`, not in
 `.github/agents/`: Copilot can't run our search tools and would answer from memory.
 
-Edit the file, save, and ask again. The agent re-reads it for every question, so
-no restart is needed. Try deleting `search_arxiv` from the `tools:` line, then ask
-for a recent paper: the agent should say it can't search papers.
+Try deleting `search_arxiv` from the `tools:` line, then ask for a recent paper: the
+agent should say it can't search papers.
+
+### `config.json`: how much it may do
+
+```json
+{
+  "model": "deepseek-flash",
+  "max_steps": 5,
+  "memory": 6,
+  "max_tokens": 1000,
+  "max_total_tokens": 20000
+}
+```
+
+JSON can't hold comments, so here is what each setting means:
+
+| Setting | What it controls | Default | Allowed range |
+|---|---|---|---|
+| `model` | The DeepSeek model that answers | `deepseek-flash` | any model name |
+| `max_steps` | Rounds of the loop before the agent gives up | 5 | 1–10 |
+| `memory` | Past exchanges re-sent with each question | 6 | 0–10 |
+| `max_tokens` | Longest reply the model may write in one round (a token is about ¾ of a word) | 1000 | 300–2000 |
+| `max_total_tokens` | Token budget for one whole question, all rounds together | 20000 | 5000–50000 |
+
+The ranges are hard limits set in `LIMITS` in `agent.py`. The config can tune a value,
+but never past them, so one edit can't make the loop endless, the replies huge or the
+bill grow. A missing file or value, or a value that isn't a whole number, falls back to
+the default. A typo that breaks the file's format stops the agent with the line to fix.
+
+Every answer ends with what it cost, for example `📊 3 rounds · 6,837 tokens`. If a
+reply hits `max_tokens`, a ⚠️ note says it was cut short. These status lines, and the
+🔎 search lines, are removed before past answers are re-sent as memory.
 
 ## Setup
 
