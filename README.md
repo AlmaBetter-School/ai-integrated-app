@@ -43,6 +43,7 @@ decides what actually runs.
 
 | File | Its job |
 |---|---|
+| `instructions.md` | The agent's rules in Markdown (Role, Workflow, Boundaries), like Lesson 2's agent file |
 | `tools.py` | The two tools, plus `TOOLS`: the descriptions the model reads |
 | `agent.py` | The agent loop: model → tool → model → answer |
 | `app.py` | The chat screen ([Gradio](https://www.gradio.app/)) |
@@ -103,5 +104,6 @@ Open the printed address, usually `http://127.0.0.1:7860`. Try:
   or books from [Open Library](https://openlibrary.org/developers/api): write the
   function in `tools.py`, then add it to `TOOLS` and `FUNCTIONS`. No change to
   `agent.py` is needed.
-- Change `SYSTEM_PROMPT` in `agent.py` to get a different style of answer.
+- Edit `instructions.md` to get a different style of answer. Save it and ask again:
+  the agent re-reads it for every question, so no restart is needed.
 - Return more results per search, or show each tool's raw results in the chat.

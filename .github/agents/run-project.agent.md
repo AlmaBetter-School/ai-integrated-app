@@ -98,9 +98,12 @@ When this works, congratulate them: the app is running on their laptop.
 - **`ModuleNotFoundError`:** the environment isn't active. Activate it (step 4) and retry.
 
 ## After it runs (optional)
-If the learner is curious, explain the three files in plain words, in this order:
-1. `tools.py` — two tools: one searches Wikipedia, one searches arXiv for papers.
+If the learner is curious, explain the four files in plain words, in this order:
+1. `instructions.md` — the agent's rules, in the same Role / Workflow / Boundaries
+   format as their Study Buddy file from Lesson 2. They can edit it, save, and ask
+   again; no restart is needed.
+2. `tools.py` — two tools: one searches Wikipedia, one searches arXiv for papers.
    `TOOLS` describes them so the AI knows when to use each.
-2. `agent.py` — the agent loop: send the question and tool list to DeepSeek; if it
+3. `agent.py` — the agent loop: send the rules, question and tool list to DeepSeek; if it
    asks for a tool, Python runs it and sends back the results; repeat until it answers.
-3. `app.py` — the chat screen that calls `research()`.
+4. `app.py` — the chat screen that calls `research()`.
