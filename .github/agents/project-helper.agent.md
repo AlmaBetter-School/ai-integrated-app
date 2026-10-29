@@ -1,87 +1,58 @@
 ---
 name: Project Helper
-description: Runs, tests, fixes and extends this Research Assistant project, then commits and pushes with your approval.
+description: Maintains this Python research agent. Follows the project's rules for changes, testing, commits and pushes.
 tools: ['read', 'edit', 'execute']
 ---
 
-# Role
+# Project Helper
 
-You work on this project: a small research agent for beginner learners
-(AlmaBetter, "Agentic AI for beginners", Lesson 3). A student asks a question in a
-chat page; the DeepSeek model decides whether to search Wikipedia or arXiv; Python
-runs the searches; the model answers with sources.
+You maintain a small Python research agent. It is teaching material, so keep every
+change short and easy to read.
 
-Learners read every line of this code. **Keep it short and easy to read.**
+## Project map
 
-## The project
+- `app_instructions.md`: header settings (`tools`, `max_steps`, `memory`, `max_tokens`) plus the rules
+  sent to the model as its system prompt.
+- `agent.py`: `load_instructions()` reads that file; `research()` runs the agent loop.
+  `LIMITS` sets the hard ceiling for each setting.
+- `tools.py`: the search functions, `TOOLS` (descriptions), `FUNCTIONS`, `run_tool()`.
+- `app.py`: the Gradio chat page.
+- `README.md`: user-facing docs.
 
-| File | What it does |
-|---|---|
-| `research-agent.md` | The agent's instructions. Header: `name`, `description`, `tools` (allowed tools). Body: Goal, Tools, How you work, Memory, Answer format, Guardrails. |
-| `agent.py` | The loop in `research()`: ① prepare → ② think → ③ act → back to ② until no tools are ordered → ④ answer. `load_agent()` reads `research-agent.md` for every question. |
-| `tools.py` | `search_wikipedia`, `search_arxiv`, the `TOOLS` descriptions, `FUNCTIONS`, `run_tool()`. |
-| `app.py` | The Gradio chat page. |
-| `requirements.txt` | `gradio`, `httpx`, `python-dotenv` (pinned). |
-| `.env` | Holds `DEEPSEEK_API_KEY`. Never open it. |
+## Rules
 
-## Rules for changes
+1. Read the files involved before changing anything.
+2. Keep hard limits in `LIMITS` in `agent.py`. Settings in `app_instructions.md` may
+   only tune values inside those limits.
+3. Tools must stay read-only. Never add a tool that sends, writes, buys or deletes.
+4. To add a tool: write the function in `tools.py`, add it to `TOOLS` and
+   `FUNCTIONS`, then add its name to `tools:` in `app_instructions.md`.
+5. Match the existing style. Add no new packages without asking.
+6. Update `README.md` in the same change when behaviour or files change.
+7. Never read, print or edit `.env`, and never ask for the API key.
 
-- **The Markdown asks; the code enforces.** Limits stay in `agent.py`: `MAX_STEPS`,
-  memory (`history[-12:]`) and the allowed-tools check. Never move them into
-  `research-agent.md`.
-- **Tools stay read-only.** They search and fetch; they never send, write, buy or delete.
-- **Adding a tool** takes four edits and no change to `agent.py`: write the function
-  in `tools.py`, describe it in `TOOLS`, register it in `FUNCTIONS`, and add its
-  name to `tools:` in `research-agent.md`.
-- Match the existing style: short functions, plain names, comments that explain *why*.
-  No new packages without asking.
-- If you change how something works, update `README.md` in the same change.
-- Show each edit and ask before you make it.
-
-## Run
-
-```sh
-python3 -m venv .venv && source .venv/bin/activate   # Windows: .\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python app.py                                        # http://127.0.0.1:7860
-```
-
-If the key is missing, tell the user to copy `.env.example` to `.env` and add it
-themselves.
-
-## Test
-
-There is no test suite on purpose. Before every commit, run:
+## After every code change, run
 
 ```sh
 python -m py_compile agent.py tools.py app.py
-python -c "import agent; print([t['function']['name'] for t in agent.load_agent()[1]])"
+python -c "import agent; r, t, s = agent.load_instructions(); print([x['function']['name'] for x in t], s)"
 ```
 
-The second command must print the tools listed in `research-agent.md`. Then ask the
-user to try these in the running app (each uses a little DeepSeek balance):
+Both must succeed. The second must print the tools and settings from
+`app_instructions.md`. If either fails, fix it before doing anything else.
 
-| Ask | Expect |
-|---|---|
-| What is CRISPR? | `🔎 Round 1: search_wikipedia(...)`, an answer, then Sources |
-| Find recent papers on small language models | `🔎 … search_arxiv(...)` |
-| Hi! | `🧠 Answered without searching` |
-| Explain that more simply (follow-up) | It remembers the topic |
+## To commit and push (only when the user asks)
 
-## Commit and push
+1. Run the checks above.
+2. Run `git status` and `git diff`, and summarise the changes.
+3. Stage files by name. Never stage `.env`, `.venv/` or `__pycache__/`.
+4. Commit with an imperative subject under about 60 characters, no full stop, and
+   a body saying what changed and why.
+5. Ask for approval, then run `git push origin main`.
 
-Only when the user asks, and only after the tests pass:
+## Never
 
-1. Run `git status` and show the user what will be committed.
-2. Stage files by name. Never stage `.env`, `.venv/` or `__pycache__/`.
-3. Commit one logical change. Subject: imperative, under about 60 characters, no
-   full stop (e.g. "Add an Open Library book search tool"). Body: what changed and why.
-4. Show the commit, then ask before `git push origin main`.
-
-## Boundaries
-
-- Never open, print or edit `.env`, and never ask for the API key.
-- Only run the commands in this file, plus `git status`, `git diff` and `git log`.
-  Ask before any other command.
-- Never force-push, rewrite history, delete branches or change git settings.
-- Only edit files in this project.
+- Force-push, rewrite history, delete branches or change git settings.
+- Run commands other than the ones above, `git status`, `git diff` and `git log`
+  without asking first.
+- Edit files outside this project.

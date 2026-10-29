@@ -8,40 +8,54 @@ import httpx
 from tools import TOOLS, run_tool
 
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
-MAX_STEPS = 5  # Stop after this many model calls, so the agent can't loop forever.
-# The agent's instructions: a header between --- lines (name, description, tools),
-# then Markdown sections for its goal, tools, loop, memory, answer format and guardrails.
-# The file describes the limits; this code enforces them (MAX_STEPS, memory, allowed tools).
-AGENT_FILE = Path(__file__).with_name("research-agent.md")
+# The agent's settings and rules: a header between --- lines (name, tools, max_steps,
+# memory), then the Markdown rules the model reads first, every time.
+INSTRUCTIONS_FILE = Path(__file__).with_name("app_instructions.md")
+# (lowest, highest, default) for each setting. The file can tune a value, but never
+# past these limits, so an edit can't make the loop endless or the bill huge.
+LIMITS = {
+    "max_steps": (1, 10, 5),  # Rounds of the loop before the agent gives up.
+    "memory": (0, 10, 6),     # Past exchanges re-sent with each question.
+    "max_tokens": (300, 2000, 1000),  # Longest reply per round. Below 300, answers get cut off.
+}
 
 
-def load_agent():
-    """Read the agent file fresh for every question, so a saved edit applies without a restart.
+def load_instructions():
+    """Read app_instructions.md fresh for every question, so a saved edit applies without a restart.
 
-    Returns the rules (everything after the header) and the tools its header allows.
+    Returns the rules, the tools the header allows, and the settings, kept within LIMITS.
     """
     try:
-        text = AGENT_FILE.read_text(encoding="utf-8")
+        text = INSTRUCTIONS_FILE.read_text(encoding="utf-8")
     except OSError:
-        return "", []
+        return "", [], {}
     header, rules = "", text
     if text.startswith("---"):
         header, _, rules = text[3:].partition("\n---")
-    allowed = []
+    values = {}
     for line in header.splitlines():
-        if line.startswith("tools:"):
-            allowed = [name.strip(" '\"") for name in line[len("tools:"):].strip(" []").split(",")]
+        key, _, value = line.partition(":")
+        values[key.strip()] = value.strip()
+
+    allowed = [name.strip(" '\"") for name in values.get("tools", "").strip("[]").split(",")]
     tools = [tool for tool in TOOLS if tool["function"]["name"] in allowed]
-    return rules.strip(), tools
+    settings = {}
+    for key, (lowest, highest, default) in LIMITS.items():
+        try:
+            number = int(values.get(key, default))
+        except ValueError:  # Not a whole number, so use the safe default.
+            number = default
+        settings[key] = max(lowest, min(number, highest))
+    return rules.strip(), tools, settings
 
 
-def ask_model(messages, tools, api_key):
+def ask_model(messages, tools, max_tokens, api_key):
     """Send the conversation and the allowed tools to DeepSeek; return its message."""
     request = {
         "model": "deepseek-flash",
         "messages": messages,
         "thinking": {"type": "disabled"},
-        "max_tokens": 1000,
+        "max_tokens": max_tokens,  # Caps the reply's length, and so its cost.
     }
     if tools:  # With no tools listed, the model can only answer from memory.
         request["tools"] = tools
@@ -61,27 +75,29 @@ def research(question, history=None):
     ① Prepare   rules + recent chat + the question
     ② Think     the model reads everything and decides: order tools, or answer?
     ③ Act       Python runs each tool it ordered and adds the results,
-                then goes back to ② (at most MAX_STEPS rounds)
+                then goes back to ② (at most max_steps rounds)
     ④ Answer    no orders this time, so the model's reply is the answer
     """
     api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
     if not api_key:
         return "Add DEEPSEEK_API_KEY to your local .env file, then restart the app."
-    rules, tools = load_agent()
+    rules, tools, settings = load_instructions()
     if not rules:
-        return "Add your agent's rules to research-agent.md (next to app.py), save it, then ask again."
+        return "Add your agent's rules to app_instructions.md (next to app.py), save it, then ask again."
     allowed = [tool["function"]["name"] for tool in tools]
 
-    # ① Prepare: rules first, then the recent chat (last six exchanges), then the question.
-    recent = (history or [])[-12:]
+    # ① Prepare: rules first, then the recent chat (memory exchanges, two messages each),
+    # then the question.
+    remembered = 2 * settings["memory"]
+    recent = (history or [])[-remembered:] if remembered else []
     messages = [{"role": "system", "content": rules}, *recent,
                 {"role": "user", "content": question}]
     tools_used = []  # One line per search, shown above the answer.
 
     try:
-        for round_number in range(1, MAX_STEPS + 1):
+        for round_number in range(1, settings["max_steps"] + 1):
             # ② Think: the model reads the whole conversation and the tools it's allowed.
-            reply = ask_model(messages, tools, api_key)
+            reply = ask_model(messages, tools, settings["max_tokens"], api_key)
             messages.append(reply)
 
             # The model's decision: did it order any tools?

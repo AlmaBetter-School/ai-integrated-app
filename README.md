@@ -30,7 +30,7 @@ Both tools are free public APIs with no sign-up. The only key you need is for
  answer + sources
 ```
 
-1. Python reads `research-agent.md`, then sends its instructions, the question
+1. Python reads `app_instructions.md`, then sends its rules, the question
    **and a description of each tool the file allows** to DeepSeek.
 2. DeepSeek either asks for a tool (for example `search_arxiv("gravitational force")`)
    or writes the final answer.
@@ -45,7 +45,7 @@ decides what actually runs.
 
 | File | Its job |
 |---|---|
-| `research-agent.md` | The agent's instructions: allowed `tools`, then its goal, loop, memory, answer format and guardrails |
+| `app_instructions.md` | The agent's settings (`tools`, `max_steps`, `memory`, `max_tokens`), then its goal, loop, memory, answer format and guardrails |
 | `tools.py` | The two tools, plus `TOOLS`: the descriptions the model reads |
 | `agent.py` | The agent loop: model → tool → model → answer |
 | `app.py` | The chat screen ([Gradio](https://www.gradio.app/)) |
@@ -55,21 +55,24 @@ decides what actually runs.
 
 ## The agent's instructions
 
-`research-agent.md` is what the model reads first, every time. It has one section
-for each part of an agent, so you can read how the agent works in one place:
+`app_instructions.md` holds everything that shapes the agent, in one place.
 
-| Section | Part of the agent | Enforced in code by |
-|---|---|---|
-| Header `tools:` | Which tools it may use | `load_agent()` and the allowed-tools check in `agent.py` |
-| Goal | What it's for | |
-| Tools | When to use each tool | `TOOLS` in `tools.py` |
-| How you work | The loop: understand, plan, act, check, answer | The `for` loop in `research()`, capped at `MAX_STEPS` |
-| Memory | What it can remember | `history[-12:]`: the last 6 exchanges |
-| Answer format | What a good reply looks like | |
-| Guardrails | What it must never do | Read-only tools, `MAX_STEPS`, key kept in `.env` |
+**Settings** (the header between the `---` lines):
 
-The file *asks*; the code *enforces*. That's why the limits (rounds, memory) live
-in `agent.py`: editing a Markdown file can't make the loop run forever.
+| Setting | What it controls | Default | Allowed range |
+|---|---|---|---|
+| `tools` | Which tools from `tools.py` the model may use | both | any listed in `TOOLS` |
+| `max_steps` | Rounds of the loop before the agent gives up | 5 | 1–10 |
+| `memory` | Past exchanges re-sent with each question | 6 | 0–10 |
+| `max_tokens` | Longest reply the model may write in one round (a token is about ¾ of a word); limits cost | 1000 | 300–2000 |
+
+The ranges are hard limits set in `LIMITS` in `agent.py`. The file can tune a value,
+but never past them, so one edit can't make the loop endless, the replies huge or the bill grow. A
+missing or invalid value falls back to the default.
+
+**Rules** (everything below the header) are sent to the model first, every time,
+with one section for each part of an agent: Goal, Tools, How you work (the loop),
+Memory, Answer format and Guardrails.
 
 It uses the same header format as the `study-buddy.agent.md` you wrote in Lesson 2,
 but our `agent.py` reads it, not Copilot. That's why it sits next to `app.py`, not in
@@ -131,6 +134,6 @@ Open the printed address, usually `http://127.0.0.1:7860`. Try:
 - **Add a third tool**, for example weather from [Open-Meteo](https://open-meteo.com/)
   or books from [Open Library](https://openlibrary.org/developers/api): write the
   function in `tools.py`, add it to `TOOLS` and `FUNCTIONS`, then add its name to
-  the `tools:` line in `research-agent.md`. No change to `agent.py` is needed.
-- Edit the Answer format section in `research-agent.md` to get a different style of answer.
+  the `tools:` line in `app_instructions.md`. No change to `agent.py` is needed.
+- Edit the Answer format section in `app_instructions.md` to get a different style of answer.
 - Return more results per search, or show each tool's raw results in the chat.
