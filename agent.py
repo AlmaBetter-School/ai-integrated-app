@@ -101,10 +101,10 @@ def research(question, history=None):
     """Answer a question with the agent loop:
 
     ① Prepare   rules + recent chat + the question
-    ② Think     the model reads everything and decides: order tools, or answer?
-    ③ Act       Python runs each tool it ordered and adds the results,
+    ② Think     the model reads everything and decides: call tools, or answer?
+    ③ Act       Python runs each tool the model called and adds the results,
                 then goes back to ② (at most max_steps rounds)
-    ④ Answer    no orders this time, so the model's reply is the answer
+    ④ Answer    no tool calls this time, so the model's reply is the answer
     """
     api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
     if not api_key:
@@ -133,10 +133,10 @@ def research(question, history=None):
             tokens_spent += tokens
             messages.append(reply)
 
-            # The model's decision: did it order any tools?
-            orders = reply.get("tool_calls")
-            if not orders:
-                # ④ Answer: no orders, so it has finished. Show its searches, then the
+            # The model's decision: did it ask to call any tools?
+            tool_calls = reply.get("tool_calls")
+            if not tool_calls:
+                # ④ Answer: no tool calls, so it has finished. Show its searches, then the
                 # answer, a note if max_tokens cut it short, and what it cost.
                 searches = "\n".join(tools_used) or "🧠 Answered without searching"
                 answer = f"{searches}\n\n{reply['content']}"
@@ -150,17 +150,17 @@ def research(question, history=None):
                 return (f"I stopped after {tokens_spent:,} tokens, this question's budget "
                         "(max_total_tokens in app_instructions.md). Try a more specific question.")
 
-            # ③ Act & observe: run every tool it ordered and add each result to the
+            # ③ Act & observe: run each tool the model called and add its result to the
             # conversation. The for loop then starts the next round, back at ②.
-            for order in orders:
-                name = order["function"]["name"]
-                arguments = json.loads(order["function"]["arguments"])
-                if name in allowed:  # Guardrail: only tools listed in the agent file can run.
+            for tool_call in tool_calls:
+                name = tool_call["function"]["name"]
+                arguments = json.loads(tool_call["function"]["arguments"])
+                if name in allowed:  # Guardrail: only tools listed in app_instructions.md can run.
                     tools_used.append(f"🔎 Round {round_number}: {name}(\"{arguments.get('query', '')}\")")
                     result = run_tool(name, arguments)
                 else:
                     result = f"Error: {name} is not in this agent's tools list."
-                messages.append({"role": "tool", "tool_call_id": order["id"], "content": result})
+                messages.append({"role": "tool", "tool_call_id": tool_call["id"], "content": result})
     except httpx.HTTPStatusError as error:
         if error.response.status_code == 401:
             return "DeepSeek could not accept the key. Check your local .env and restart."
