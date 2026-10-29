@@ -51,8 +51,7 @@ decides what actually runs.
 | `app.py` | The chat screen ([Gradio](https://www.gradio.app/)) |
 | `requirements.txt` | Packages to install |
 | `.env.example` | Template for your private `.env` key file |
-| `.github/agents/project-helper.agent.md` | A VS Code Copilot agent that helps you run, fix and extend this project |
-| `AGENTS.md` | A project guide for AI coding agents: how it works, how to test, how to commit |
+| `.github/agents/project-helper.agent.md` | A VS Code Copilot agent that runs, tests, fixes and extends this project, and commits and pushes with your approval |
 
 ## The agent's instructions
 
