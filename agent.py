@@ -9,9 +9,10 @@ from tools import TOOLS, run_tool
 
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 MAX_STEPS = 5  # Stop after this many model calls, so the agent can't loop forever.
-# The agent file, in the same format as Lesson 2's study-buddy.agent.md:
-# a header between --- lines (name, description, tools), then the rules in Markdown.
-AGENT_FILE = Path(__file__).with_name("research-assistant.agent.md")
+# The agent's instructions: a header between --- lines (name, description, tools),
+# then Markdown sections for its goal, tools, loop, memory, answer format and guardrails.
+# The file describes the limits; this code enforces them (MAX_STEPS, memory, allowed tools).
+AGENT_FILE = Path(__file__).with_name("research-agent.md")
 
 
 def load_agent():
@@ -68,7 +69,7 @@ def research(question, history=None):
         return "Add DEEPSEEK_API_KEY to your local .env file, then restart the app."
     rules, tools = load_agent()
     if not rules:
-        return "Add your agent's rules to research-assistant.agent.md (next to app.py), save it, then ask again."
+        return "Add your agent's rules to research-agent.md (next to app.py), save it, then ask again."
     allowed = [tool["function"]["name"] for tool in tools]
 
     # ① Prepare: rules first, then the recent chat (last six exchanges), then the question.
